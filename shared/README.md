@@ -7,6 +7,7 @@ person, since both branches depend on this folder.
 | ---------------- | ------------------------------------------------------- |
 | `index.html`     | The page. Creates the one map and loads feature scripts |
 | `map.js`         | The base map: layer registry, camera, legend            |
+| `sidebar.js`     | The right-hand sidebar: one tab and panel per feature   |
 | `sample-data.js` | Demo fixture from `spikes/spike.py`, delete when unused |
 
 Open `index.html` in a browser. No build step, no install.
@@ -73,6 +74,36 @@ rest.
 
 The legend renders itself from registered layers, so adding an entry needs no
 shared markup.
+
+## Sidebar
+
+The sidebar on the right has a **Restaurants** tab and a **Routes** tab. Each
+feature owns the panel behind its tab and fills it from its own `layers.js`,
+so the sidebar markup in `index.html` never needs editing:
+
+```js
+var panel = sidebar.panel('restaurants');      // a plain <section>
+panel.innerHTML = '<h2>Restaurants</h2>' +
+  '<label>Max price <select id="restaurants-price">...</select></label>';
+
+sidebar.onShow('restaurants', function () {
+  // the user opened this tab - e.g. view.fitBounds(...) to your results
+});
+```
+
+Prefix element ids inside your panel with your namespace (`restaurants-price`,
+`routes-distance`), for the same reason layer ids are namespaced: ids are
+global to the page.
+
+| Call                      | Does                                       |
+| ------------------------- | ------------------------------------------ |
+| `sidebar.panel(name)`     | The `<section>` for a feature's tab        |
+| `sidebar.onShow(name, fn)`| Runs `fn` whenever that tab is opened      |
+| `sidebar.show(name)`      | Opens a tab                                |
+| `sidebar.active()`        | Name of the open tab                       |
+
+Switching tabs only changes the panel. Both features' layers stay on the map;
+hide your own with `view.setNamespaceVisible(...)` if you need to.
 
 ## Not solved yet
 

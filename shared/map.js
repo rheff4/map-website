@@ -119,12 +119,17 @@
       return above.length ? above[0].id : undefined;
     }
 
+    // A layer is clickable if it has a popup, an onClick handler, or both.
     function wirePopup(layer) {
-      if (typeof layer.popup !== 'function') return;
+      var hasPopup = typeof layer.popup === 'function';
+      var hasClick = typeof layer.onClick === 'function';
+      if (!hasPopup && !hasClick) return;
 
       map.on('click', layer.id, function (e) {
         var feature = e.features && e.features[0];
         if (!feature) return;
+        if (hasClick) layer.onClick(feature.properties, feature);
+        if (!hasPopup) return;
         var html = layer.popup(feature.properties, feature);
         if (!html) return;
         new maplibregl.Popup()
@@ -261,6 +266,16 @@
       },
 
       /* Escape hatch for anything this wrapper does not cover yet. */
+      /*
+       * Run fn([lon, lat], event) on every click on the map, e.g. to let the
+       * user pick a point. Returns a function that stops listening.
+       */
+      onMapClick: function (fn) {
+        function handler(e) { fn([e.lngLat.lng, e.lngLat.lat], e); }
+        map.on('click', handler);
+        return function off() { map.off('click', handler); };
+      },
+
       getMap: function () {
         return map;
       }

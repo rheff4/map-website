@@ -26,7 +26,8 @@ view.addLayer({
   data: geojson,                     // Feature or FeatureCollection
   paint: { 'line-color': '#2b6cb0', 'line-width': 5 },
   legend: { label: 'Running route', color: '#2b6cb0' },
-  popup: (props) => `<b>${props.name}</b>`   // optional
+  popup: (props) => `<b>${props.name}</b>`,  // optional
+  onClick: (props, feature) => { ... }      // optional
 });
 ```
 
@@ -70,6 +71,7 @@ rest.
 | `view.setNamespaceVisible(ns, bool)`      | Toggles a whole feature                 |
 | `view.flyTo(center, zoom)`                | Moves the camera                        |
 | `view.fitBounds(bounds, padding)`         | Zooms to fit                            |
+| `view.onMapClick(([lon, lat], e) => {})`  | Any map click; returns an unsubscribe   |
 | `view.ready((view, map) => {})`           | Runs once the style has loaded          |
 | `view.listLayers()`                       | Registered layer ids                    |
 | `view.getMap()`                           | Raw MapLibre map, escape hatch          |

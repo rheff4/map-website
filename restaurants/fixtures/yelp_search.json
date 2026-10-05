@@ -1,0 +1,221 @@
+{
+ "_readme": "DEMO FIXTURE - fictional restaurants in the Yelp Fusion business search response format.",
+ "businesses": [
+  {
+   "id": "mock-y01",
+   "alias": "mock-y01",
+   "name": "Lantern and Ladle",
+   "coordinates": {
+    "latitude": 42.3603,
+    "longitude": -71.0542
+   },
+   "location": {
+    "display_address": [
+     "1 Mock Wharf (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$$",
+   "rating": 4.5,
+   "review_count": 1210,
+   "categories": [
+    {
+     "alias": "seafood",
+     "title": "Seafood"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y01?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y02",
+   "alias": "mock-y02",
+   "name": "Nonna Pina's",
+   "coordinates": {
+    "latitude": 42.364,
+    "longitude": -71.0547
+   },
+   "location": {
+    "display_address": [
+     "2 Mock St (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$",
+   "rating": 4.5,
+   "review_count": 980,
+   "categories": [
+    {
+     "alias": "italian",
+     "title": "Italian"
+    },
+    {
+     "alias": "pizza",
+     "title": "Pizza"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y02?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y03",
+   "alias": "mock-y03",
+   "name": "Copper Kettle Chowder House",
+   "coordinates": {
+    "latitude": 42.3589,
+    "longitude": -71.0521
+   },
+   "location": {
+    "display_address": [
+     "3 Mock Wharf (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$",
+   "rating": 4.0,
+   "review_count": 400,
+   "categories": [
+    {
+     "alias": "seafood",
+     "title": "Seafood"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y03?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y05",
+   "alias": "mock-y05",
+   "name": "Saffron Alley Indian Cuisine",
+   "coordinates": {
+    "latitude": 42.3511,
+    "longitude": -71.0641
+   },
+   "location": {
+    "display_address": [
+     "5 Mock St (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$",
+   "rating": 4.5,
+   "review_count": 420,
+   "categories": [
+    {
+     "alias": "indpak",
+     "title": "Indian"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y05?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y12",
+   "alias": "mock-y12",
+   "name": "Gilded Spoon",
+   "coordinates": {
+    "latitude": 42.3547,
+    "longitude": -71.0689
+   },
+   "location": {
+    "display_address": [
+     "12 Mock Ave (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$$$",
+   "rating": 4.5,
+   "review_count": 1500,
+   "categories": [
+    {
+     "alias": "newamerican",
+     "title": "New American"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y12?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y14",
+   "alias": "mock-y14",
+   "name": "Fenway Pho House",
+   "coordinates": {
+    "latitude": 42.3455,
+    "longitude": -71.0702
+   },
+   "location": {
+    "display_address": [
+     "14 Mock St (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$",
+   "rating": 4.5,
+   "review_count": 610,
+   "categories": [
+    {
+     "alias": "vietnamese",
+     "title": "Vietnamese"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y14?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y15",
+   "alias": "mock-y15",
+   "name": "Sweet Basil Thai",
+   "coordinates": {
+    "latitude": 42.3525,
+    "longitude": -71.0625
+   },
+   "location": {
+    "display_address": [
+     "15 Mock St (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$$",
+   "rating": 4.0,
+   "review_count": 150,
+   "categories": [
+    {
+     "alias": "thai",
+     "title": "Thai"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y15?utm_source=mock",
+   "is_closed": false
+  },
+  {
+   "id": "mock-y17",
+   "alias": "mock-y17",
+   "name": "Dunkin'",
+   "coordinates": {
+    "latitude": 42.3552,
+    "longitude": -71.061
+   },
+   "location": {
+    "display_address": [
+     "17 Mock St (fictional)",
+     "Boston, MA"
+    ]
+   },
+   "price": "$",
+   "rating": 3.5,
+   "review_count": 200,
+   "categories": [
+    {
+     "alias": "coffee",
+     "title": "Coffee & Tea"
+    },
+    {
+     "alias": "donuts",
+     "title": "Donuts"
+    }
+   ],
+   "url": "https://www.yelp.com/biz/mock-y17?utm_source=mock",
+   "is_closed": false
+  }
+ ]
+}

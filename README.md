@@ -24,6 +24,8 @@ to install. The server serves the site and each feature's API, and reads API
 keys from `.env` (copy `.env.example`; `.env` is gitignored), so keys never
 reach the browser. See `server/router.py` for how a feature adds endpoints.
 
+Restaurant setup, ranking and data: [`restaurants/README.md`](restaurants/README.md).
+
 ## Workflow
 
 1. Work on your own branch, inside your own folder. Push often.

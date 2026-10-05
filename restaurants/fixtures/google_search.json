@@ -1,0 +1,1330 @@
+{
+ "_readme": "DEMO FIXTURE - fictional restaurants in the Google Places API (New) response format. Used when no API keys are set (demo mode) and by the tests.",
+ "places": [
+  {
+   "id": "mock-g01",
+   "displayName": {
+    "text": "Lantern & Ladle",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "1 Mock Wharf, Boston (fictional)",
+   "formattedAddress": "1 Mock Wharf, Boston (fictional)",
+   "location": {
+    "latitude": 42.3601,
+    "longitude": -71.054
+   },
+   "primaryType": "seafood_restaurant",
+   "types": [
+    "seafood_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+   "rating": 4.6,
+   "userRatingCount": 2140,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g01",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g02",
+   "displayName": {
+    "text": "Nonna Pina's Kitchen",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "2 Mock St, Boston (fictional)",
+   "formattedAddress": "2 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.3637,
+    "longitude": -71.0545
+   },
+   "primaryType": "italian_restaurant",
+   "types": [
+    "italian_restaurant",
+    "pizza_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_MODERATE",
+   "rating": 4.7,
+   "userRatingCount": 1830,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g02",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 23,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g03",
+   "displayName": {
+    "text": "Copper Kettle Chowder House",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "3 Mock Wharf, Boston (fictional)",
+   "formattedAddress": "3 Mock Wharf, Boston (fictional)",
+   "location": {
+    "latitude": 42.3588,
+    "longitude": -71.052
+   },
+   "primaryType": "seafood_restaurant",
+   "types": [
+    "seafood_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_MODERATE",
+   "rating": 4.4,
+   "userRatingCount": 960,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g03",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 21,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 21,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g04",
+   "displayName": {
+    "text": "Rue Blanche Bistro",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "4 Mock St, Boston (fictional)",
+   "formattedAddress": "4 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.358,
+    "longitude": -71.07
+   },
+   "primaryType": "french_restaurant",
+   "types": [
+    "french_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+   "rating": 4.5,
+   "userRatingCount": 410,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g04",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 2,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g05",
+   "displayName": {
+    "text": "Saffron Alley",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "5 Mock St, Boston (fictional)",
+   "formattedAddress": "5 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.351,
+    "longitude": -71.064
+   },
+   "primaryType": "indian_restaurant",
+   "types": [
+    "indian_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_MODERATE",
+   "rating": 4.6,
+   "userRatingCount": 780,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g05",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 0,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 1,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g06",
+   "displayName": {
+    "text": "Tiny Dumpling Room",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "6 Mock St, Boston (fictional)",
+   "formattedAddress": "6 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.3515,
+    "longitude": -71.061
+   },
+   "primaryType": "chinese_restaurant",
+   "types": [
+    "chinese_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+   "rating": 4.9,
+   "userRatingCount": 14,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g06",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 20,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 20,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g07",
+   "displayName": {
+    "text": "Chipotle Mexican Grill",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "7 Mock St, Boston (fictional)",
+   "formattedAddress": "7 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.3555,
+    "longitude": -71.0605
+   },
+   "primaryType": "mexican_restaurant",
+   "types": [
+    "mexican_restaurant",
+    "fast_food_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+   "rating": 4.0,
+   "userRatingCount": 640,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g07",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 0,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 1,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 10,
+       "minute": 30
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g08",
+   "displayName": {
+    "text": "Harborview Steak & Oyster",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "8 Mock Wharf, Boston (fictional)",
+   "formattedAddress": "8 Mock Wharf, Boston (fictional)",
+   "location": {
+    "latitude": 42.356,
+    "longitude": -71.0505
+   },
+   "primaryType": "steak_house",
+   "types": [
+    "steak_house",
+    "seafood_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_VERY_EXPENSIVE",
+   "rating": 4.3,
+   "userRatingCount": 2400,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g08",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 23,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g09",
+   "displayName": {
+    "text": "Back Bay Noodle Bar",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "9 Mock Ave, Boston (fictional)",
+   "formattedAddress": "9 Mock Ave, Boston (fictional)",
+   "location": {
+    "latitude": 42.35,
+    "longitude": -71.076
+   },
+   "primaryType": "ramen_restaurant",
+   "types": [
+    "ramen_restaurant",
+    "japanese_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_MODERATE",
+   "rating": 4.5,
+   "userRatingCount": 1300,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g09",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 1,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 2,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 3,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 4,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 5,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 6,
+       "hour": 0,
+       "minute": 30
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 30
+      },
+      "close": {
+       "day": 0,
+       "hour": 0,
+       "minute": 30
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g10",
+   "displayName": {
+    "text": "Morning Star Diner",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "10 Mock St, Boston (fictional)",
+   "formattedAddress": "10 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.353,
+    "longitude": -71.059
+   },
+   "primaryType": "breakfast_restaurant",
+   "types": [
+    "breakfast_restaurant",
+    "american_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+   "rating": 3.9,
+   "userRatingCount": 520,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g10",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 15,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 6,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 15,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g11",
+   "displayName": {
+    "text": "Casa Verde Taqueria",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "11 Mock St, Boston (fictional)",
+   "formattedAddress": "11 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.347,
+    "longitude": -71.064
+   },
+   "primaryType": "mexican_restaurant",
+   "types": [
+    "mexican_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+   "rating": 4.7,
+   "userRatingCount": 350,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g11",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 0,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 0,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 1,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 1,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 2,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 11,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g12",
+   "displayName": {
+    "text": "The Gilded Spoon",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "12 Mock Ave, Boston (fictional)",
+   "formattedAddress": "12 Mock Ave, Boston (fictional)",
+   "location": {
+    "latitude": 42.3545,
+    "longitude": -71.069
+   },
+   "primaryType": "american_restaurant",
+   "types": [
+    "american_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_VERY_EXPENSIVE",
+   "rating": 4.8,
+   "userRatingCount": 3100,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g12",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 3,
+       "hour": 17,
+       "minute": 30
+      },
+      "close": {
+       "day": 3,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 17,
+       "minute": 30
+      },
+      "close": {
+       "day": 4,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 17,
+       "minute": 30
+      },
+      "close": {
+       "day": 5,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 17,
+       "minute": 30
+      },
+      "close": {
+       "day": 6,
+       "hour": 23,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 0,
+       "hour": 17,
+       "minute": 30
+      },
+      "close": {
+       "day": 0,
+       "hour": 23,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  },
+  {
+   "id": "mock-g13",
+   "displayName": {
+    "text": "Old Port Clam Shack",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "13 Mock Wharf, Boston (fictional)",
+   "formattedAddress": "13 Mock Wharf, Boston (fictional)",
+   "location": {
+    "latitude": 42.362,
+    "longitude": -71.05
+   },
+   "primaryType": "seafood_restaurant",
+   "types": [
+    "seafood_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_INEXPENSIVE",
+   "rating": 4.2,
+   "userRatingCount": 300,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g13",
+   "businessStatus": "CLOSED_PERMANENTLY"
+  }
+ ]
+}

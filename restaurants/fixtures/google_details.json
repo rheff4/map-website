@@ -1,0 +1,93 @@
+{
+ "_readme": "DEMO FIXTURE - Google Place Details responses, keyed by place id. Fictional.",
+ "places": {
+  "mock-g16": {
+   "id": "mock-g16",
+   "displayName": {
+    "text": "Quiet Harbor Kitchen",
+    "languageCode": "en"
+   },
+   "shortFormattedAddress": "16 Mock St, Boston (fictional)",
+   "formattedAddress": "16 Mock St, Boston (fictional)",
+   "location": {
+    "latitude": 42.3655,
+    "longitude": -71.056
+   },
+   "primaryType": "american_restaurant",
+   "types": [
+    "american_restaurant",
+    "restaurant"
+   ],
+   "priceLevel": "PRICE_LEVEL_EXPENSIVE",
+   "rating": 4.7,
+   "userRatingCount": 220,
+   "utcOffsetMinutes": -240,
+   "googleMapsUri": "https://maps.google.com/?cid=0&mock=mock-g16",
+   "businessStatus": "OPERATIONAL",
+   "regularOpeningHours": {
+    "periods": [
+     {
+      "open": {
+       "day": 2,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 2,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 3,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 3,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 4,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 4,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 5,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 5,
+       "hour": 22,
+       "minute": 0
+      }
+     },
+     {
+      "open": {
+       "day": 6,
+       "hour": 17,
+       "minute": 0
+      },
+      "close": {
+       "day": 6,
+       "hour": 22,
+       "minute": 0
+      }
+     }
+    ]
+   }
+  }
+ }
+}

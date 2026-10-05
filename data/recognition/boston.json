@@ -1,0 +1,130 @@
+{
+  "_readme": [
+    "Curated recognition for Boston restaurants - sources with no public API.",
+    "One entry = one source vouching for one restaurant. A restaurant on three lists has three entries.",
+    "Fields: name, address, source (an id from SOURCES in restaurants/scoring.py), source_url (link to the list or article), note (optional, e.g. the year).",
+    "place_id / lat / lon are filled in by: python -m restaurants.tools.enrich_recognition",
+    "Every entry below is a PLACEHOLDER: a fictional restaurant used by demo mode. Placeholders are ignored when real API keys are in use. Replace them with real entries copied from the source - never guess an award.",
+    "See restaurants/README.md, 'Adding recognition entries'."
+  ],
+  "city": "boston",
+  "entries": [
+    {
+      "name": "Lantern & Ladle",
+      "address": "1 Mock Wharf, Boston, MA (fictional)",
+      "source": "eater_38",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3601, "lon": -71.0540
+    },
+    {
+      "name": "Lantern & Ladle",
+      "address": "1 Mock Wharf, Boston, MA (fictional)",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3601, "lon": -71.0540
+    },
+    {
+      "name": "Nonna Pina's Kitchen",
+      "address": "2 Mock St, Boston, MA (fictional)",
+      "source": "eater_38",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3637, "lon": -71.0545
+    },
+    {
+      "name": "Nonna Pina's Kitchen",
+      "address": "2 Mock St, Boston, MA (fictional)",
+      "source": "city_guide",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3637, "lon": -71.0545
+    },
+    {
+      "name": "The Gilded Spoon",
+      "address": "12 Mock Ave, Boston, MA (fictional)",
+      "source": "michelin_star",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3545, "lon": -71.0690
+    },
+    {
+      "name": "Saffron Alley",
+      "address": "5 Mock St, Boston, MA (fictional)",
+      "source": "influencer",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real list.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3510, "lon": -71.0640
+    },
+    {
+      "name": "Saffron Alley",
+      "address": "5 Mock St, Boston, MA (fictional)",
+      "source": "influencer",
+      "source_url": "https://example.com/placeholder-2",
+      "note": "PLACEHOLDER - a second, separate creator list.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3510, "lon": -71.0640
+    },
+    {
+      "name": "Casa Verde Taqueria",
+      "address": "11 Mock St, Boston, MA (fictional)",
+      "source": "eater_heatmap",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3470, "lon": -71.0640
+    },
+    {
+      "name": "Fenway Pho House",
+      "address": "14 Mock St, Boston, MA (fictional)",
+      "source": "zomato",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3455, "lon": -71.0702
+    },
+    {
+      "name": "Fenway Pho House",
+      "address": "14 Mock St, Boston, MA (fictional)",
+      "source": "influencer",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real list.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3455, "lon": -71.0702
+    },
+    {
+      "name": "Copper Kettle Chowder House",
+      "address": "3 Mock Wharf, Boston, MA (fictional)",
+      "source": "city_guide",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real guide.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3588, "lon": -71.0520
+    },
+    {
+      "name": "Rue Blanche Bistro",
+      "address": "4 Mock St, Boston, MA (fictional)",
+      "source": "thefork",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
+      "placeholder": true,
+      "place_id": null, "lat": 42.3580, "lon": -71.0700
+    },
+    {
+      "name": "Quiet Harbor Kitchen",
+      "address": "16 Mock St, Boston, MA (fictional)",
+      "source": "michelin_selected",
+      "source_url": "https://example.com/placeholder",
+      "note": "PLACEHOLDER - demo of a recognised place that the search APIs did not return.",
+      "placeholder": true,
+      "place_id": "mock-g16", "lat": 42.3655, "lon": -71.0560
+    }
+  ]
+}

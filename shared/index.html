@@ -47,19 +47,19 @@
 
 <script>
   // One map for the whole site. Both features add layers to this object.
-  const view = MapWebsite.createMap({ container: 'map' });
+  window.view = MapWebsite.createMap({ container: 'map' });
+</script>
 
-  // ----------------------------------------------------------------------
-  // Feature branches plug in here, with a script tag just above this one:
-  //
-  //   routes/       ->  src="../routes/layers.js"
-  //   restaurants/  ->  src="../restaurants/layers.js"
-  //
-  // Each of those files does its own work and calls view.addLayer({...}) with
-  // ids namespaced to its folder. Adding one is a one-line change to this
-  // file, which keeps merge conflicts between the two branches small.
-  // ----------------------------------------------------------------------
+<!--
+  Feature layers. Each file lives in its own folder and owns its own namespace,
+  so neither branch has to edit this file again - which is what keeps the two
+  branches from conflicting. Order here only sets which runs first; draw order
+  on the map is decided by layer type in map.js.
+-->
+<script src="../routes/layers.js"></script>
+<script src="../restaurants/layers.js"></script>
 
+<script>
   // ---- demo block: remove once the real features load their own data ----
   const asPoints = (items) => ({
     type: 'FeatureCollection',

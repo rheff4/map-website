@@ -1,0 +1,29 @@
+# Secrets. This repo is public - never commit an API key.
+# Once a key is committed it stays in the git history, so a leaked key has to
+# be rotated at the provider, not just deleted in a later commit.
+.env
+.env.*
+!.env.example
+
+# Node
+node_modules/
+.next/
+out/
+dist/
+build/
+*.log
+npm-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# OS and editors
+.DS_Store
+Thumbs.db
+*.swp
+.vscode/
+.idea/

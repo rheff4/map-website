@@ -89,6 +89,12 @@
       else pending.push(fn);
     }
 
+    // MapLibre reports most layer and source problems as error events rather
+    // than throwing, so without this they vanish silently.
+    map.on('error', function (e) {
+      console.error('[MapWebsite]', (e && e.error && e.error.message) || e);
+    });
+
     map.on('load', function () {
       if (map.getLayer('background')) {
         map.setPaintProperty('background', 'background-color', BACKGROUND_COLOR);
@@ -100,10 +106,15 @@
 
     // MapLibre inserts a layer *before* an existing one, so to place a layer
     // by z we insert it before the lowest layer that should sit above it.
+    //
+    // Only layers already ON the map count. The registry also holds layers
+    // that are still queued, and naming one of those as the insert point makes
+    // MapLibre fire an error event and silently skip the layer - no exception,
+    // so the source exists but nothing draws.
     function beforeIdFor(z) {
       var above = Object.keys(registry)
         .map(function (id) { return registry[id]; })
-        .filter(function (other) { return zOf(other) > z; })
+        .filter(function (other) { return zOf(other) > z && map.getLayer(other.id); })
         .sort(function (a, b) { return zOf(a) - zOf(b); });
       return above.length ? above[0].id : undefined;
     }

@@ -253,6 +253,8 @@ const map = new maplibregl.Map({
 });
 
 map.on('load', () => {
+  map.setPaintProperty('background', 'background-color', '#f5efe6');
+
   if (DATA.route) {
     map.addSource('route', { type:'geojson', data: DATA.route });
     map.addLayer({ id:'route', type:'line', source:'route',

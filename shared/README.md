@@ -10,7 +10,9 @@ person, since both branches depend on this folder.
 | `sidebar.js`     | The right-hand sidebar: one tab and panel per feature   |
 | `sample-data.js` | Demo fixture from `spikes/spike.py`, delete when unused |
 
-Open `index.html` in a browser. No build step, no install.
+Run `python server/app.py` and open http://localhost:8000/. No build step, no
+install. Opening the file directly does not work: it loads scripts by relative
+path and calls the API, so it needs the server.
 
 ## The rule
 
@@ -24,7 +26,8 @@ view.addLayer({
   data: geojson,                     // Feature or FeatureCollection
   paint: { 'line-color': '#2b6cb0', 'line-width': 5 },
   legend: { label: 'Running route', color: '#2b6cb0' },
-  popup: (props) => `<b>${props.name}</b>`   // optional
+  popup: (props) => `<b>${props.name}</b>`,  // optional
+  onClick: (props, feature) => { ... }      // optional
 });
 ```
 
@@ -68,6 +71,7 @@ rest.
 | `view.setNamespaceVisible(ns, bool)`      | Toggles a whole feature                 |
 | `view.flyTo(center, zoom)`                | Moves the camera                        |
 | `view.fitBounds(bounds, padding)`         | Zooms to fit                            |
+| `view.onMapClick(([lon, lat], e) => {})`  | Any map click; returns an unsubscribe   |
 | `view.ready((view, map) => {})`           | Runs once the style has loaded          |
 | `view.listLayers()`                       | Registered layer ids                    |
 | `view.getMap()`                           | Raw MapLibre map, escape hatch          |
@@ -105,10 +109,11 @@ global to the page.
 Switching tabs only changes the panel. Both features' layers stay on the map;
 hide your own with `view.setNamespaceVisible(...)` if you need to.
 
-## Not solved yet
+## Server and API keys
 
-`index.html` is a static page with no server, so there is nowhere to keep the
-OpenRouteService API key. The key must never go in client JavaScript — the repo
-is public. The route generator needs a small backend (or a serverless function)
-before it can call ORS for real. The layer contract above does not change when
-that happens.
+`python server/app.py` serves this page and each feature's API (see the root
+README). API keys live in `.env` and are only read on the server - never put a
+key in client JavaScript; the repo is public. A feature adds endpoints by
+writing `<feature>/api.py` with a `register(router)` function, documented in
+`server/router.py`, and calls them from its `layers.js` with
+`fetch('/api/<feature>/...')`. The layer contract above does not change.

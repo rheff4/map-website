@@ -15,6 +15,9 @@ build/
 npm-debug.log*
 yarn-error.log*
 
+# Server cache of third-party API responses (server/cache.py)
+.cache/
+
 # Python
 __pycache__/
 *.py[cod]

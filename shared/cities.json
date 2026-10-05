@@ -1,0 +1,14 @@
+{
+  "_readme": "One entry per launch city. Adding a city = add an entry here + its data files. Coordinates are [longitude, latitude]; bounds are [[west, south], [east, north]].",
+  "default": "boston",
+  "cities": {
+    "boston": {
+      "name": "Boston",
+      "center": [-71.0656, 42.3550],
+      "center_label": "Boston Common",
+      "zoom": 14,
+      "bounds": [[-71.1912, 42.2279], [-70.9860, 42.4008]],
+      "recognition": "data/recognition/boston.json"
+    }
+  }
+}

@@ -363,10 +363,8 @@
 
   // Clicking the map moves the start point. Note this fires for clicks on
   // restaurant pins too - their popup still opens.
-  view.ready(function (v, map) {
-    map.on('click', function (e) {
-      setStart([e.lngLat.lng, e.lngLat.lat]);
-    });
+  view.onMapClick(function (lonLat) {
+    setStart(lonLat);
   });
 
   // Re-frame the route when the user comes back to this tab.

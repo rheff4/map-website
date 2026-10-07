@@ -1,7 +1,11 @@
 # Map Website
 
 One interactive map for foodie runners new to a city: running routes, public
-bathrooms, and authentic local restaurants. See `SilvaHefferon_ProjectBrief.pdf`.
+bathrooms, and authentic local restaurants.
+
+Current spec: **[Map Website_Sprint 1_PRD 2.md](Map%20Website_Sprint%201_PRD%202.md)**.
+`SilvaHefferon_ProjectBrief.pdf` is revision 1, kept as the original record;
+where the two disagree, the PRD is current.
 
 ## Layout
 

@@ -111,6 +111,35 @@ class Places(unittest.TestCase):
                          "Spectacle Island")
 
 
+class Airports(unittest.TestCase):
+
+    def geom(self, points):
+        return [{"lon": lon, "lat": lat} for lon, lat in points]
+
+    def test_airport_mapped_as_a_simple_area(self):
+        el = {"type": "way", "tags": {"aeroway": "aerodrome", "name": "Small Field"},
+              "geometry": self.geom([(0, 0), (2, 0), (2, 2), (0, 2), (0, 0)])}
+        airports = bt.airport_outlines([el])
+        self.assertTrue(bt.in_airport(1, 1, airports))
+        self.assertFalse(bt.in_airport(3, 1, airports))
+
+    def test_big_airport_stored_as_fragments_is_stitched_together(self):
+        # Like Logan: one outline split across several member ways.
+        el = {"type": "relation", "tags": {"aeroway": "aerodrome", "name": "Logan"},
+              "members": [
+                  {"type": "way", "geometry": self.geom([(0, 0), (2, 0)])},
+                  {"type": "way", "geometry": self.geom([(2, 2), (2, 0)])},   # reversed
+                  {"type": "way", "geometry": self.geom([(2, 2), (0, 2), (0, 0)])},
+              ]}
+        airports = bt.airport_outlines([el])
+        self.assertEqual(airports[0][0], "Logan")
+        self.assertTrue(bt.in_airport(1, 1, airports))
+
+    def test_airport_mapped_only_as_a_point_has_no_inside(self):
+        el = {"type": "node", "lon": 0, "lat": 0, "tags": {"aeroway": "aerodrome"}}
+        self.assertEqual(bt.airport_outlines([el]), [])
+
+
 class Build(unittest.TestCase):
     """build() end to end, on made-up Overpass elements."""
 
@@ -128,7 +157,19 @@ class Build(unittest.TestCase):
             (-71.0641, 42.3551, {}),
             (-71.0642, 42.3551, {"access": "private"})), find_places=lambda pts: [])
         self.assertEqual(len(feats), 1)
-        self.assertEqual(skipped, 1)
+        self.assertEqual(skipped["not_public"], 1)
+
+    def test_airport_toilets_are_left_out(self):
+        # A square "airport" around the second toilet only.
+        square = [[-71.0645, 42.3545], [-71.0635, 42.3545], [-71.0635, 42.3555],
+                  [-71.0645, 42.3555], [-71.0645, 42.3545]]
+        feats, _, skipped = bt.build(self.elements(
+            (-71.0649, 42.3551, {}),                 # outside
+            (-71.0640, 42.3550, {})),                # inside
+            find_places=lambda pts: [], airports=[("Test Airport", [square])])
+        self.assertEqual(len(feats), 1)
+        self.assertEqual(feats[0]["geometry"]["coordinates"], [-71.0649, 42.3551])
+        self.assertEqual(skipped["airport"], 1)
 
     def test_far_from_any_corner_it_uses_the_place_instead(self):
         # ~3 km east, out in the harbour.

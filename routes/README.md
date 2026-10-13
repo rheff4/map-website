@@ -107,8 +107,14 @@ loads.
 toilets are kept and say so in the popup, which also shows fee, wheelchair
 access and opening hours where OSM has them.
 
-Built 13 October 2026: 165 toilets - 2 by name, 129 by intersection, 34 by
-place. **53 of them (32%) are inside Logan Airport**, 26 labelled "Terminal B".
+**Airports are left out.** Toilets inside an airport's mapped boundary are
+excluded: Boston's bounds include Logan, whose terminals held 48 of the 165
+public toilets - many past security, none somewhere a runner can reach. The
+boundary is used rather than a box around the airport, which would also have
+removed 5 East Boston neighbourhood toilets (Bremen Street Park, Piers Park).
+
+Built 13 October 2026: 117 toilets - 2 by name, 113 by intersection, 2 by
+place (Castle Island, Spectacle Island Visitors Center).
 
 Rebuild to refresh; add `--cached` to re-label from the last download without
 querying Overpass again, which is a free shared service and often slow.

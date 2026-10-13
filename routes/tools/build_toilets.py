@@ -19,6 +19,10 @@ map. The name still shows in the popup.
 "Public" means not tagged access=private or access=no. Customers-only toilets
 are kept and marked as such, since a runner may well be a customer.
 
+Toilets inside an airport's boundary are left out. Boston's bounds include
+Logan, whose terminals held a third of the city's toilets - many past
+security, none somewhere a runner can reach.
+
 Writes data/toilets/<city>.json, served by GET /api/routes/toilets. Re-run to
 refresh: toilets open and close, and OpenStreetMap keeps improving.
 """
@@ -31,7 +35,7 @@ import os
 import re
 import sys
 
-from routes.tools.build_elevation_grid import overpass
+from routes.tools.build_elevation_grid import _inside, _stitch, overpass
 from server import cities
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -81,6 +85,10 @@ PLACE_KINDS = [
     ("place", {"island", "islet"}),
     ("aeroway", {"aerodrome", "terminal"}),
 ]
+
+AIRPORT_QUERY = """[out:json][timeout:90][bbox:%(s)f,%(w)f,%(n)f,%(e)f];
+nwr["aeroway"="aerodrome"];
+out geom;"""
 
 QUERY = """[out:json][timeout:180][bbox:%(s)f,%(w)f,%(n)f,%(e)f];
 nwr["amenity"="toilets"]->.t;
@@ -175,7 +183,35 @@ def places_around(points):
     return found
 
 
+def airport_outlines(elements):
+    """[(name, rings)] for each aerodrome mapped as an area. Rings are lists
+    of [lon, lat]; big airports are multipolygons stored as fragments, so
+    they're stitched into closed rings first."""
+    out = []
+    for el in elements:
+        if el["type"] == "way" and el.get("geometry"):
+            fragments = [[[g["lon"], g["lat"]] for g in el["geometry"]]]
+        elif el["type"] == "relation":
+            fragments = [[[g["lon"], g["lat"]] for g in m["geometry"]]
+                         for m in el.get("members", []) if m.get("type") == "way" and m.get("geometry")]
+        else:
+            continue                      # an airport mapped as a single point has no inside
+        rings = _stitch(fragments)
+        if rings:
+            out.append((el.get("tags", {}).get("name", "airport"), rings))
+    return out
+
+
+def in_airport(lon, lat, airports):
+    return any(_inside((lon, lat), rings) for _, rings in airports)
+
+
 # -------------------------------------------------------------------- build
+
+def fetch_airports(bounds):
+    (w, s), (e, n) = bounds
+    return overpass(AIRPORT_QUERY % {"s": s, "w": w, "n": n, "e": e})
+
 
 def fetch(bounds):
     (w, s), (e, n) = bounds
@@ -183,10 +219,11 @@ def fetch(bounds):
                              "types": "|".join(STREET_RANK)})
 
 
-def build(elements, find_places=places_around):
+def build(elements, find_places=places_around, airports=()):
     """Labelled GeoJSON features from Overpass elements, plus counts.
 
-    find_places is injectable so tests can run without the network."""
+    find_places is injectable so tests can run without the network.
+    airports: output of airport_outlines(); toilets inside them are left out."""
     toilets, streets, coords = [], [], {}
     for el in elements:
         tags = el.get("tags", {})
@@ -208,8 +245,9 @@ def build(elements, find_places=places_around):
                      for nid in s["nodes"] if nid in coords]
 
     public = [t for t in toilets if t["tags"].get("access") not in NOT_PUBLIC]
-    skipped = len(toilets) - len(public)
-    labelled = [(t,) + label_for(t, crossings, street_points) for t in public]
+    reachable = [t for t in public if not in_airport(t["lon"], t["lat"], airports)]
+    skipped = {"not_public": len(toilets) - len(public), "airport": len(public) - len(reachable)}
+    labelled = [(t,) + label_for(t, crossings, street_points) for t in reachable]
 
     # Far from any intersection: label by the place the toilet is in instead.
     far = [i for i, (t, _, how, metres) in enumerate(labelled)
@@ -282,7 +320,10 @@ def main(argv=None):
     find_places = lambda points: _cached(                          # noqa: E731
         places_path, args.cached, lambda: places_around(points),
         key=json.dumps([[round(c, 6) for c in p] for p in points]))
-    features, counts, skipped = build(elements, find_places)
+    airports = airport_outlines(_cached(
+        os.path.join(CACHE_DIR, "toilets-%s-airports.json" % city["key"]), args.cached,
+        lambda: fetch_airports(city["bounds"]), key=json.dumps(city["bounds"])))
+    features, counts, skipped = build(elements, find_places, airports)
 
     out = {
         "type": "FeatureCollection",
@@ -293,7 +334,8 @@ def main(argv=None):
             "source": "OpenStreetMap contributors (ODbL), amenity=toilets",
             "built": datetime.date.today().isoformat(),
             "labels": counts,
-            "excluded_not_public": skipped,
+            "excluded": skipped,
+            "airports_excluded": [name for name, _ in airports],
         },
         "features": features,
     }
@@ -305,7 +347,9 @@ def main(argv=None):
 
     far = [f for f in features if f["properties"]["label_source"] == "intersection"
            and f["properties"]["label_distance_m"] > PLACE_FALLBACK_M]
-    print("  %d toilets labelled (%d excluded as not public)" % (len(features), skipped))
+    print("  %d toilets labelled; left out %d not public, %d inside %s" % (
+        len(features), skipped["not_public"], skipped["airport"],
+        ", ".join(name for name, _ in airports) or "no airport"))
     print("  by own name: %(name)d   by intersection: %(intersection)d   by place: %(place)d   "
           "by street: %(street)d   unlabelled: %(none)d" % counts)
     if far:

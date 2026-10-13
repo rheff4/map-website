@@ -75,6 +75,13 @@ class ApiTest(unittest.TestCase):
     def request(self, **query):
         return Request("GET", "/api/restaurants/search", {k: str(v) for k, v in query.items()}, None)
 
+    def test_config_lists_cuisines_for_the_filter(self):
+        config = api.get_config(Request("GET", "/api/restaurants/config", {}, None))
+        keys = [c["key"] for c in config["cuisines"]]
+        self.assertIn("seafood", keys)
+        labels = [c["label"] for c in config["cuisines"]]
+        self.assertEqual(labels, sorted(labels))
+
     def test_defaults_to_city_centre(self):
         result = api.get_search(self.request())
         self.assertEqual(result["city"]["key"], "boston")

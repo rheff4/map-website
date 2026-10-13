@@ -1,11 +1,11 @@
 """
 Restaurant endpoints, loaded by server/app.py.
 
-    GET /api/restaurants/config                       city + demo-mode info
+    GET /api/restaurants/config                       city, demo mode, cuisine list
     GET /api/restaurants/search?lat=&lon=&radius=     ranked restaurants
 """
 
-from restaurants import service
+from restaurants import cuisines, service
 from server import cities
 from server.router import ApiError
 
@@ -31,6 +31,9 @@ def get_config(request):
         "demo_reason": m["reason"],
         "radius": {"min": service.MIN_RADIUS_M, "max": service.MAX_RADIUS_M,
                    "default": service.DEFAULT_RADIUS_M},
+        # The cuisine filter is shown before any search, so it needs a fixed list.
+        "cuisines": sorted(({"key": k, "label": v} for k, v in cuisines.LABELS.items()),
+                           key=lambda c: c["label"]),
     }
 
 

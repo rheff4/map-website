@@ -5,9 +5,10 @@
  *
  * shared/index.html already loads this file. Everything here stays in the
  * `restaurants:` namespace (layer ids, element ids). The ranking itself is
- * done on the server (restaurants/scoring.py); this file asks
- * /api/restaurants/search for a ranked list around a point and then filters
- * it locally, so changing a filter never costs an API call.
+ * done on the server (restaurants/scoring.py). Nothing happens until the user
+ * presses Search: then this file asks /api/restaurants/search for a ranked list
+ * around the chosen point and filters it locally. A new request is only made
+ * when the point or distance changed - re-filtering is free.
  */
 (function (global) {
   'use strict';
@@ -31,7 +32,9 @@
     originLabel: '',
     radius: 1500,
     data: null,            // last /search response
-    filters: { prices: [], cuisine: '', openNow: false, recognisedOnly: true },
+    fetched: null,         // {lon, lat, radius, label} that `data` was fetched for
+    filters: { prices: [], cuisine: '', openNow: false, recognisedOnly: true }, // the form
+    applied: null,         // the filters the visible list was made with
     selectedId: null,
     picking: false,
     seq: 0,                // ignore responses from superseded searches
@@ -132,7 +135,7 @@
     '<h2>Restaurants</h2>' +
     '<p class="r-intro">Ranked by how many trusted local sources vouch for each place.</p>' +
     '<div id="restaurants-notices"></div>' +
-    '<form id="restaurants-filters" class="r-filters" onsubmit="return false">' +
+    '<form id="restaurants-filters" class="r-filters">' +
       '<fieldset class="r-field">' +
         '<legend>Search from</legend>' +
         '<div class="r-origin" id="restaurants-origin">…</div>' +
@@ -163,6 +166,8 @@
       '<label class="r-check"><input type="checkbox" id="restaurants-open"> Open now</label>' +
       '<label class="r-check"><input type="checkbox" id="restaurants-recognised" checked>' +
         ' Only places recognised by trusted sources</label>' +
+      '<button type="submit" class="r-search" id="restaurants-search" disabled>Search</button>' +
+      '<p class="r-pending" id="restaurants-pending" hidden>Changed - press Search to update the results.</p>' +
     '</form>' +
     '<div id="restaurants-status" class="r-status" role="status" aria-live="polite"></div>' +
     '<ol id="restaurants-list" class="r-list"></ol>';
@@ -261,7 +266,7 @@
       return;
     }
     setOrigin(lonLat, 'Point picked on the map');
-    search();
+    markChanged();
   });
 
   document.addEventListener('keydown', function (e) {
@@ -274,7 +279,7 @@
     setPicking(false);
     var city = state.config.city;
     setOrigin(city.center, city.center_label || city.name);
-    search();
+    markChanged();
   });
 
   $('locate').addEventListener('click', function () {
@@ -296,7 +301,7 @@
         return;
       }
       setOrigin(here, 'Your location');
-      search();
+      markChanged();
     }, function (err) {
       button.disabled = false;
       button.textContent = 'My location';
@@ -307,13 +312,18 @@
   });
 
   // ---------------------------------------------------------------------
-  // Filters (applied locally to the ranked list)
+  // Filters. Changing one only records it; Search applies them all.
   // ---------------------------------------------------------------------
+
+  function markChanged() {
+    $('pending').hidden = !state.applied;   // nothing to update before the first search
+    $('search').classList.add('is-changed');
+  }
 
   $('radius').addEventListener('change', function () {
     state.radius = Number(this.value);
     drawArea();
-    search();
+    markChanged();
   });
 
   panel.querySelector('.r-prices').addEventListener('click', function (e) {
@@ -324,23 +334,28 @@
     button.setAttribute('aria-pressed', on ? 'true' : 'false');
     state.filters.prices = state.filters.prices.filter(function (p) { return p !== price; });
     if (on) state.filters.prices.push(price);
-    applyFilters();
+    markChanged();
   });
 
   $('cuisine').addEventListener('change', function () {
     state.filters.cuisine = this.value;
-    applyFilters();
+    markChanged();
   });
 
   $('open').addEventListener('change', function () {
     state.filters.openNow = this.checked;
-    applyFilters();
+    markChanged();
   });
 
   $('recognised').addEventListener('change', function () {
     state.filters.recognisedOnly = this.checked;
-    if (state.data) renderCuisineOptions();
-    applyFilters();
+    markChanged();
+  });
+
+  // The Search button, or Enter in any field.
+  $('filters').addEventListener('submit', function (e) {
+    e.preventDefault();
+    runSearch();
   });
 
   function clearFilters() {
@@ -348,11 +363,11 @@
     panel.querySelectorAll('[data-price]').forEach(function (b) { b.setAttribute('aria-pressed', 'false'); });
     $('cuisine').value = '';
     $('open').checked = false;
-    applyFilters();
+    runSearch();
   }
 
   function visibleResults() {
-    var f = state.filters;
+    var f = state.applied;
     return state.data.results.filter(function (r) {
       if (f.recognisedOnly && !r.recognised) return false;
       if (f.prices.length && f.prices.indexOf(r.price) === -1) return false;
@@ -362,23 +377,22 @@
     });
   }
 
-  // Counts reflect the "recognised only" switch, so "Seafood (3)" means three rows.
+  // The list comes from the server (cuisines.py), so it exists before any
+  // search. Cuisines a search turns up that are not on it are added.
   function renderCuisineOptions() {
-    var counts = {};
-    state.data.results.forEach(function (r) {
-      if (state.filters.recognisedOnly && !r.recognised) return;
+    // An older server (started before this change) sends no list; results fill it in.
+    var options = (state.config.cuisines || []).slice();
+    var known = {};
+    options.forEach(function (c) { known[c.key] = true; });
+    (state.data ? state.data.results : []).forEach(function (r) {
       r.cuisines.forEach(function (c) {
-        counts[c.key] = counts[c.key] || { label: c.label, n: 0 };
-        counts[c.key].n++;
+        if (!known[c.key]) { known[c.key] = true; options.push(c); }
       });
     });
-    var keys = Object.keys(counts).sort(function (a, b) {
-      return counts[b].n - counts[a].n || counts[a].label.localeCompare(counts[b].label);
-    });
-    if (state.filters.cuisine && !counts[state.filters.cuisine]) state.filters.cuisine = '';
-    $('cuisine').innerHTML = '<option value="">Any cuisine</option>' + keys.map(function (k) {
-      return '<option value="' + esc(k) + '"' + (k === state.filters.cuisine ? ' selected' : '') + '>' +
-             esc(counts[k].label) + ' (' + counts[k].n + ')</option>';
+    options.sort(function (a, b) { return a.label.localeCompare(b.label); });
+    $('cuisine').innerHTML = '<option value="">Any cuisine</option>' + options.map(function (c) {
+      return '<option value="' + esc(c.key) + '"' + (c.key === state.filters.cuisine ? ' selected' : '') +
+             '>' + esc(c.label) + '</option>';
     }).join('');
   }
 
@@ -386,16 +400,38 @@
   // Search
   // ---------------------------------------------------------------------
 
-  function search() {
-    var seq = ++state.seq;
-    setStatus('loading', '<span class="r-spinner" aria-hidden="true"></span>Finding restaurants…');
-    $('list').innerHTML = '';
+  function runSearch() {
+    if (!state.config) return;
+    setPicking(false);
+    state.applied = {
+      prices: state.filters.prices.slice(), cuisine: state.filters.cuisine,
+      openNow: state.filters.openNow, recognisedOnly: state.filters.recognisedOnly
+    };
+    $('pending').hidden = true;
+    $('search').classList.remove('is-changed');
 
-    var url = API + '/search?lat=' + state.origin[1].toFixed(6) +
-              '&lon=' + state.origin[0].toFixed(6) + '&radius=' + state.radius;
+    var f = state.fetched;
+    var samePlace = state.data && f && f.lon === state.origin[0] && f.lat === state.origin[1] &&
+                    f.radius === state.radius;
+    if (samePlace) applyFilters();    // only the filters changed: no API call
+    else fetchResults();
+  }
+
+  function fetchResults() {
+    var seq = ++state.seq;
+    var request = { lon: state.origin[0], lat: state.origin[1], radius: state.radius,
+                    label: state.originLabel };
+    setStatus('loading', '<span class="r-spinner" aria-hidden="true"></span>Finding restaurants\u2026');
+    $('list').innerHTML = '';
+    $('search').disabled = true;
+    $('search').textContent = 'Searching\u2026';
+
+    var url = API + '/search?lat=' + request.lat.toFixed(6) +
+              '&lon=' + request.lon.toFixed(6) + '&radius=' + request.radius;
     getJSON(url).then(function (data) {
       if (seq !== state.seq) return;
       state.data = data;
+      state.fetched = request;
       state.selectedId = null;
       renderNotices();
       renderCuisineOptions();
@@ -404,9 +440,14 @@
     }).catch(function (err) {
       if (seq !== state.seq) return;
       state.data = null;
+      state.fetched = null;
       renderPins([]);
       view.setData('restaurants:selected', EMPTY);
-      showError(err.message, search);
+      showError(err.message, runSearch);
+    }).then(function () {
+      if (seq !== state.seq) return;
+      $('search').disabled = false;
+      $('search').textContent = 'Search';
     });
   }
 
@@ -483,19 +524,19 @@
     }
     if (!all) {
       setStatus('empty', '<strong>No restaurants found</strong> within ' +
-        formatDistance(state.radius) + ' of ' + esc(state.originLabel) + '. Try a larger distance.');
+        formatDistance(state.fetched.radius) + ' of ' + esc(state.fetched.label) +
+        '. Try a larger distance and press Search.');
       return;
     }
     var recognised = data.results.filter(function (r) { return r.recognised; }).length;
-    if (state.filters.recognisedOnly && !recognised) {
+    if (state.applied.recognisedOnly && !recognised) {
       setStatus('empty', '<strong>None of the ' + all + ' restaurants here are recognised</strong> ' +
         'by a trusted source yet. <button type="button" class="r-btn r-show-all">Show all ' + all +
         ' ranked by rating</button>');
       $('status').querySelector('.r-show-all').addEventListener('click', function () {
         $('recognised').checked = false;
         state.filters.recognisedOnly = false;
-        renderCuisineOptions();
-        applyFilters();
+        runSearch();
       });
       return;
     }
@@ -600,8 +641,10 @@
       state.radius = config.radius.default;
       $('radius').value = String(state.radius);
       renderNotices();
+      renderCuisineOptions();
       setOrigin(config.city.center, config.city.center_label || config.city.name);
-      search();
+      $('search').disabled = false;
+      setStatus('idle', 'Choose where to search and what you\u2019d like, then press <strong>Search</strong>.');
     }).catch(function (err) {
       state.started = false;
       showError(err.message, start);

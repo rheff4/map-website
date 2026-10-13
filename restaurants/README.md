@@ -43,9 +43,11 @@ Either key alone works - the missing source is skipped and the page says so.
 **Cost control.** Keys are only read by the server. Every Google and Yelp
 response is cached in `.cache/` for `CACHE_TTL_HOURS` (default 7 days; capped
 at 30 days, the limit Google's terms allow for most Places content). Searches
-round the point to ~100 m so nearby searches share a cache entry. Changing
-filters never calls an API - only moving the search point or the distance
-does. A cold search costs up to 3 Google requests and 2 Yelp requests.
+round the point to ~100 m so nearby searches share a cache entry. Nothing is
+fetched until you press **Search**, and pressing it again after changing only
+price, cuisine or the checkboxes re-filters what is already loaded - only a new
+search point or distance calls the APIs. A cold search costs up to 3 Google
+requests and 2 Yelp requests.
 
 ## How ranking works
 

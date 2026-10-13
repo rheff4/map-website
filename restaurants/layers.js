@@ -568,6 +568,18 @@
       : '<span class="' + cls + '"' + (title ? ' title="' + esc(title) + '"' : '') + '>' + text + '</span>';
   }
 
+  // Confirmation from the city's licence register. Shown only on a match;
+  // no match proves nothing (licences are often under a legal name).
+  function licenceHTML(licence) {
+    if (!licence) return '';
+    var title = 'Active licence: ' + licence.name + (licence.since ? ', since ' + licence.since : '');
+    var url = safeUrl(licence.url);
+    return url
+      ? '<a class="r-chip r-chip-licence" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer"' +
+        ' title="' + esc(title) + '">✓ ' + esc(licence.text) + '</a>'
+      : '<span class="r-chip r-chip-licence" title="' + esc(title) + '">✓ ' + esc(licence.text) + '</span>';
+  }
+
   function breakdownHTML(r) {
     return '<details class="r-why"><summary>Local score ' + r.score + '</summary><ul>' +
       r.breakdown.map(function (row) {
@@ -585,7 +597,7 @@
     ].filter(Boolean).join(' · ');
     var chips = r.breakdown
       .filter(function (row) { return row.kind === 'recognition' || row.kind === 'rating'; })
-      .map(chipHTML).join('');
+      .map(chipHTML).join('') + licenceHTML(r.licence);
     var url = safeUrl(r.url);
 
     return '<li class="r-item' + (r.id === state.selectedId ? ' is-selected' : '') +

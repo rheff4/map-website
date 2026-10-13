@@ -9,7 +9,7 @@ import os
 import re
 
 from restaurants import cuisines, hours, matching, recognition, scoring
-from restaurants.sources import google, osm, yelp
+from restaurants.sources import google, licences, osm, yelp
 from server import cities, env
 from server.fetch import UpstreamError
 
@@ -63,6 +63,37 @@ def _fetch_osm(status, city, entries, lat, lon, radius_m, now):
         listing["utc_offset_minutes"] = offset
     status["osm"] = {"state": "ok", "count": len(listings)}
     return listings
+
+
+def _licence_index(status, city):
+    """An index of the city's active food licences, or None if it has none."""
+    cfg = city.get("licences")
+    if not cfg:
+        return None
+    try:
+        index = licences.Index(licences.load(city))
+    except UpstreamError as e:
+        status["licences"] = {"state": "error", "message": str(e)}
+        return None
+    status["licences"] = {"state": "ok", "count": sum(len(v) for v in index.cells.values())}
+    return index
+
+
+def _licence_for(index, city, place, item):
+    """Confirmation from the city's licence register, when there is one.
+
+    Only a match is reported. No match proves nothing - licences are often
+    under a legal name and a different address - so it never hides a place.
+    """
+    if index is None or not licences.in_city_limits(city, item["lon"], item["lat"]):
+        return None
+    address = next((e["address"] for e in place["recognition"] if e.get("address")), None) or item["address"]
+    lic = index.find(item["name"], item["lat"], item["lon"], address)
+    if lic is None:
+        return None
+    cfg = city["licences"]
+    return {"text": "Licensed · %s" % cfg["label"], "url": cfg["dataset_url"],
+            "name": lic["names"][0], "since": lic["since"], "kind": lic["kind"]}
 
 
 def _stub(entry):
@@ -164,6 +195,8 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
     unmatched = matching.attach_recognition(places, rec["entries"])
     places.extend(_recognised_extras(unmatched, lat, lon, radius_m, m, warnings))
 
+    licence_index = None if m["demo"] else _licence_index(status, city)
+
     chains = scoring.load_chains()
     excluded = {"chains": 0, "closed": 0}
     results = []
@@ -171,6 +204,7 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
         item = summarize(place, lat, lon, now)
         if item["distance_m"] > radius_m:
             continue
+        item["licence"] = _licence_for(licence_index, city, place, item)
         if item.pop("closed"):
             excluded["closed"] += 1
             continue

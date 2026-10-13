@@ -15,9 +15,19 @@ MONDAY_EVENING = datetime(2026, 10, 5, 19, 0, tzinfo=timezone(timedelta(hours=-4
 DEMO_ENV = {"RESTAURANTS_MOCK": "1"}
 
 
-@mock.patch.dict(os.environ, DEMO_ENV)
-class DemoSearchTest(unittest.TestCase):
+class DemoTestCase(unittest.TestCase):
+    """Demo mode for setUp as well as the tests: a class-level patch.dict
+    would leave setUp in live mode, which calls OpenStreetMap."""
+
     def setUp(self):
+        patcher = mock.patch.dict(os.environ, DEMO_ENV)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+
+class DemoSearchTest(DemoTestCase):
+    def setUp(self):
+        super().setUp()
         self.result = service.search(*BOSTON_COMMON, radius_m=2000, now=MONDAY_EVENING)
         self.by_name = {r["name"]: r for r in self.result["results"]}
 
@@ -66,12 +76,18 @@ class DemoSearchTest(unittest.TestCase):
 @mock.patch.dict(os.environ, {"RESTAURANTS_MOCK": "", "GOOGLE_PLACES_API_KEY": "your-key-here",
                               "YELP_API_KEY": ""})
 class ModeTest(unittest.TestCase):
-    def test_placeholder_keys_mean_demo_mode(self):
-        self.assertTrue(service.mode()["demo"])
+    def test_no_keys_means_live_mode_on_openstreetmap_only(self):
+        m = service.mode()
+        self.assertFalse(m["demo"])
+        self.assertIsNone(m["google"])      # a placeholder value is not a key
+        self.assertIsNone(m["yelp"])
+
+    def test_mock_flag_forces_demo_mode(self):
+        with mock.patch.dict(os.environ, DEMO_ENV):
+            self.assertTrue(service.mode()["demo"])
 
 
-@mock.patch.dict(os.environ, DEMO_ENV)
-class ApiTest(unittest.TestCase):
+class ApiTest(DemoTestCase):
     def request(self, **query):
         return Request("GET", "/api/restaurants/search", {k: str(v) for k, v in query.items()}, None)
 

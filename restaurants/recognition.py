@@ -15,7 +15,7 @@ from restaurants.scoring import SOURCES
 from server import cities
 
 FIELDS = ("name", "address", "source", "source_url", "note", "placeholder",
-          "place_id", "lat", "lon")
+          "place_id", "osm_id", "lat", "lon", "price", "cuisine")
 
 DEMO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                          "fixtures", "recognition_demo.json")
@@ -51,6 +51,8 @@ def load(city, demo=False):
         entry = {field: item.get(field) for field in FIELDS}
         entry["placeholder"] = bool(entry["placeholder"])
         entry["lat"], entry["lon"] = _number(entry["lat"]), _number(entry["lon"])
+        price = _number(entry["price"])
+        entry["price"] = int(price) if price in (1, 2, 3, 4) else None
         label = "Entry %d (%s)" % (i, entry["name"] or "no name")
 
         if entry["placeholder"]:
@@ -64,7 +66,7 @@ def load(city, demo=False):
             warnings.append("%s has unknown source '%s' - skipped. Known: %s."
                             % (label, entry["source"], ", ".join(SOURCES)))
             continue
-        if entry["lat"] is None and not entry["place_id"]:
+        if entry["lat"] is None and not entry["place_id"] and not entry["osm_id"]:
             unlocated.append(entry["name"])
             continue
         entries.append(entry)

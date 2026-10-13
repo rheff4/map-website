@@ -8,7 +8,7 @@ enough: two cafes share a building, and "Toro" exists in many cities.
 
 A merged place looks like:
     {'key': 'g:<google id>', 'google': listing|None, 'yelp': listing|None,
-     'recognition': [entry, ...]}
+     'osm': listing|None, 'stub': listing|None, 'recognition': [entry, ...]}
 """
 
 import difflib
@@ -66,53 +66,74 @@ def same_place(a, b, radius_m=MATCH_RADIUS_M):
     return close and names_match(a["name"], b["name"])
 
 
+# The data sources a place can combine, in order of preference for display.
+SLOTS = ("google", "yelp", "osm", "stub")
+_PREFIX = {"google": "g", "yelp": "y", "osm": "o", "stub": "r"}
+
+
+def listings(place):
+    return [place[slot] for slot in SLOTS if place.get(slot)]
+
+
 def primary(place):
-    """The listing that represents a place: Google first, then Yelp."""
-    return place.get("google") or place.get("yelp") or place.get("stub")
+    """The listing that represents a place: Google, then Yelp, then OSM."""
+    found = listings(place)
+    return found[0] if found else None
 
 
-def new_place(google=None, yelp=None, stub=None):
-    listing = google or yelp or stub
-    prefix = "g" if google else "y" if yelp else "r"
-    return {"key": "%s:%s" % (prefix, listing["id"]), "google": google,
-            "yelp": yelp, "stub": stub, "recognition": []}
+def new_place(**by_slot):
+    slot = next(s for s in SLOTS if by_slot.get(s))
+    place = {s: by_slot.get(s) for s in SLOTS}
+    place.update(key="%s:%s" % (_PREFIX[slot], by_slot[slot]["id"]), recognition=[])
+    return place
 
 
-def merge_listings(google_listings, yelp_listings, radius_m=MATCH_RADIUS_M):
-    """Combine Google and Yelp results into places, pairing duplicates."""
-    places = [new_place(google=g) for g in google_listings]
-
-    for y in yelp_listings:
+def _absorb(places, incoming, slot, radius_m):
+    """Pair each incoming listing with the closest existing place it matches."""
+    for listing in incoming:
         best, best_d = None, None
         for place in places:
-            g = place["google"]
-            if place["yelp"] is not None or g is None or not same_place(g, y, radius_m):
+            if place[slot] is not None:
                 continue
-            d = distance_m(g["lat"], g["lon"], y["lat"], y["lon"])
-            if best is None or d < best_d:
-                best, best_d = place, d
+            for other in listings(place):
+                if same_place(other, listing, radius_m):
+                    d = distance_m(other["lat"], other["lon"], listing["lat"], listing["lon"])
+                    if best is None or d < best_d:
+                        best, best_d = place, d
         if best is not None:
-            best["yelp"] = y
+            best[slot] = listing
         else:
-            places.append(new_place(yelp=y))
+            places.append(new_place(**{slot: listing}))
+
+
+def merge_listings(google_listings, yelp_listings, osm_listings=(), radius_m=MATCH_RADIUS_M):
+    """Combine Google, Yelp and OSM results into places, pairing duplicates."""
+    places = []
+    _absorb(places, google_listings, "google", radius_m)
+    _absorb(places, yelp_listings, "yelp", radius_m)
+    _absorb(places, osm_listings, "osm", radius_m)
     return places
 
 
 def find_place_for_entry(places, entry, radius_m=MATCH_RADIUS_M):
     """The place a recognition entry refers to, or None.
 
-    An entry resolved to a Google place id (see tools/enrich_recognition.py)
-    matches exactly; otherwise fall back to name + proximity.
+    An entry resolved to a Google place id or an OSM id (see
+    tools/enrich_recognition.py) matches exactly; otherwise fall back to
+    name + proximity.
     """
-    if entry.get("place_id"):
-        for place in places:
-            if place["google"] and place["google"]["id"] == entry["place_id"]:
-                return place
+    for slot, key in (("google", "place_id"), ("osm", "osm_id")):
+        if entry.get(key):
+            for place in places:
+                if place[slot] and place[slot]["id"] == entry[key]:
+                    return place
 
+    if entry.get("lat") is None:
+        return None
     best, best_d = None, None
     for place in places:
-        for listing in (place["google"], place["yelp"], place["stub"]):
-            if listing and same_place(listing, entry, radius_m):
+        for listing in listings(place):
+            if same_place(listing, entry, radius_m):
                 d = distance_m(listing["lat"], listing["lon"], entry["lat"], entry["lon"])
                 if best is None or d < best_d:
                     best, best_d = place, d

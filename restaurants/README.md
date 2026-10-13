@@ -11,43 +11,57 @@ Owner: Pedro · Branch: `restaurants`
 python server/app.py
 ```
 
-Open http://localhost:8000/. The Restaurants tab is open by default.
+Open http://localhost:8000/ (or double-click `start.bat`). The Restaurants tab
+is open by default; choose where and what, then press **Search**.
 
-Without API keys it runs in **demo mode**: fictional restaurants and
-placeholder awards, all from `restaurants/fixtures/`, with a yellow banner
-saying so. That is enough to work on the UI and the ranking without spending
-anything.
+**Real data, free, no setup.** Restaurant listings come from
+[OpenStreetMap](https://www.openstreetmap.org/) (via the free Overpass API) -
+no account, key or card. Recognition comes from `data/recognition/boston.json`.
 
-Tests (no network, no keys):
+**Demo mode** (`RESTAURANTS_MOCK=1` in `.env`) uses fictional restaurants and
+placeholder awards from `restaurants/fixtures/`, with a yellow banner, and
+never touches the network. The tests always run in demo mode:
 
 ```
 python -m unittest discover -s restaurants/tests -t .
 ```
 
-## Setting up API keys
+## Data sources
 
-1. Copy `.env.example` to `.env` in the repo root. `.env` is gitignored; never
-   commit a key - the repo is public.
+| Source | Cost | Gives | Missing |
+| --- | --- | --- | --- |
+| **OpenStreetMap** (default) | Free | Name, location, cuisine, website, opening hours for about a third of places | Ratings; price almost never |
+| Curated recognition file | Free | Michelin / Eater recognition; Michelin's price and cuisine | Only covers listed places |
+| Google Places (optional) | Card needed; free under ~1,000 requests/month | Ratings, price, hours for most places | - |
+| Yelp (optional) | Paid after trial | Second rating source | Hours |
+
+Without Google or Yelp, ranking is driven by recognition alone (it dominates
+anyway - see below), non-recognised places are sorted by distance, the price
+filter works for the Michelin-listed places, and "open now" works wherever OSM
+or Google has hours. Places with unknown hours are hidden by "open now".
+
+OpenStreetMap's Overpass servers are run by volunteers and are sometimes
+busy; the page then shows "OpenStreetMap unavailable - try again in a minute".
+Results are cached for `CACHE_TTL_HOURS` (default 7 days), so a repeat search
+of the same area is instant and makes no request.
+
+**Adding Google or Yelp later** - put a key in `.env` and restart:
+
+1. `.env` lives in the repo root (copy `.env.example`); it is gitignored -
+   never commit a key, the repo is public.
 2. **Google Places API (New)**: in Google Cloud Console create a project,
-   enable *Places API (New)*, attach a billing account, create an API key and
-   restrict it to that API. Set `GOOGLE_PLACES_API_KEY=...`.
-3. **Yelp** (optional): create an app at
-   https://www.yelp.com/developers/v3/manage_app and set `YELP_API_KEY=...`.
-   Yelp's API is paid after a free trial.
-4. Restart the server. The banner disappears; the startup log lists which keys
-   were read.
+   attach billing, enable *Places API (New)*, create an API key restricted to
+   that API, set its daily quota to ~30 requests (30 x 31 stays inside the
+   free 1,000/month) and add a $1 budget alert. Set `GOOGLE_PLACES_API_KEY=...`.
+3. **Yelp**: create an app at https://www.yelp.com/developers/v3/manage_app
+   and set `YELP_API_KEY=...`.
 
-Either key alone works - the missing source is skipped and the page says so.
-`RESTAURANTS_MOCK=1` forces demo mode even with keys.
-
-**Cost control.** Keys are only read by the server. Every Google and Yelp
-response is cached in `.cache/` for `CACHE_TTL_HOURS` (default 7 days; capped
-at 30 days, the limit Google's terms allow for most Places content). Searches
-round the point to ~100 m so nearby searches share a cache entry. Nothing is
-fetched until you press **Search**, and pressing it again after changing only
-price, cuisine or the checkboxes re-filters what is already loaded - only a new
-search point or distance calls the APIs. A cold search costs up to 3 Google
-requests and 2 Yelp requests.
+Google and Yelp results are combined with OpenStreetMap's: the same
+restaurant from several sources becomes one result. Nothing is fetched until
+you press **Search**, and pressing it again after changing only price, cuisine
+or the checkboxes re-filters what is already loaded - only a new search point
+or distance makes requests. Searches round the point to ~100 m so nearby
+searches share a cache entry.
 
 ## How ranking works
 
@@ -95,8 +109,8 @@ public API, so recognition is a hand-curated file per city:
 - **Eater 38** (Oct 8 2026 edition): 36 of the 38 - Rubato (South Walpole) and
   Thaiger Den (Malden) are outside the bounds.
 
-Entries need a place id and coordinates before they can match anything; run
-the enrichment tool (step 3) once your Google key is in `.env`.
+Each entry has been located with the enrichment tool (step 3). Michelin
+entries also carry Michelin's price and cuisine, which fill in for map data.
 
 Demo mode does not use this file: its fictional entries live in
 `restaurants/fixtures/recognition_demo.json`.
@@ -133,16 +147,21 @@ Demo mode does not use this file: its fictional entries live in
 
    To add a new kind of source, add it to `SOURCES` in `scoring.py` first.
 
-3. Run the enrichment tool. It looks each new entry up on Google once and
-   writes back its place id and coordinates, so matching is exact:
+3. Run the enrichment tool. It looks each new entry up once and writes back
+   its location, so matching is exact. With no Google key it uses
+   OpenStreetMap: it finds the address with Nominatim, then snaps the entry to
+   the OSM restaurant with a matching name within 150 m (`osm_id`). With a
+   Google key it uses Google instead (`place_id`).
 
    ```
    python -m restaurants.tools.enrich_recognition --dry-run
    python -m restaurants.tools.enrich_recognition
    ```
 
-   Check every line marked `CHECK` (Google's name differs from yours) and
-   fix any `?` lines by hand by adding `lat` and `lon`.
+   Check every line marked `CHECK` - the matched name differs from yours, or
+   no mapped restaurant of that name was found and the entry was placed at its
+   address (still fine for ranking; it just has no OSM hours or cuisine). Fix
+   any `?` lines by hand by adding `lat` and `lon`.
 
 4. Restart the server (close `start.bat`'s window and open it again).
 
@@ -177,7 +196,8 @@ return is still added, so curated places always appear in range.
 | `scoring.py` | **Weights and thresholds.** Tune here |
 | `matching.py` | When two records are the same restaurant |
 | `recognition.py` | Loads and validates the curated file |
-| `sources/google.py`, `sources/yelp.py` | API clients, cached |
+| `sources/osm.py` | OpenStreetMap: Overpass listings, Nominatim geocoding |
+| `sources/google.py`, `sources/yelp.py` | Optional API clients, cached |
 | `cuisines.py` | One cuisine vocabulary for Google and Yelp |
 | `hours.py` | "Open now" from weekly hours |
 | `tools/enrich_recognition.py` | Adds place ids and coordinates to entries |
@@ -188,6 +208,8 @@ return is still added, so curated places always appear in range.
 
 ## Known limits
 
+- Without Google/Yelp there are no ratings, so non-recognised places are not
+  ranked by quality - they are hidden by default for that reason.
 - Google returns at most 60 places per search and Yelp 100, so at 3-5 km
   unrecognised places are a sample, not everything. Recognised places are
   always included.

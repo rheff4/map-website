@@ -489,11 +489,13 @@
         ' restaurants - see <code>restaurants/README.md</code>.</div>');
     }
     if (state.data) {
+      // Only failures are worth a notice: a source switched off (no key) is normal.
+      var SOURCE_NAMES = { google: 'Google', yelp: 'Yelp', osm: 'OpenStreetMap' };
       Object.keys(state.data.sources).forEach(function (name) {
         var s = state.data.sources[name];
-        if (s.state === 'error' || s.state === 'off') {
-          notes.push('<div class="r-notice r-notice-warn"><strong>' +
-            (name === 'google' ? 'Google' : 'Yelp') + ' not used.</strong> ' + esc(s.message) + '</div>');
+        if (s.state === 'error') {
+          notes.push('<div class="r-notice r-notice-warn"><strong>' + (SOURCE_NAMES[name] || name) +
+            ' unavailable.</strong> ' + esc(s.message) + '</div>');
         }
       });
       if (!state.data.demo && state.data.recognition.loaded === 0) {
@@ -519,7 +521,9 @@
       : '';
 
     if (results.length) {
-      setStatus('ok', results.length + ' of ' + all + ' restaurants, best first' + hidden);
+      setStatus('ok', results.length + ' of ' + all + ' restaurants, best first' + hidden +
+        (data.sources.osm ? '<br><small>Map data © <a href="https://www.openstreetmap.org/copyright" ' +
+                            'target="_blank" rel="noopener">OpenStreetMap</a> contributors</small>' : ''));
       return;
     }
     if (!all) {

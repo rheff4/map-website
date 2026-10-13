@@ -1,11 +1,12 @@
 """
-One cuisine vocabulary for Google place types and Yelp category aliases, so the
-cuisine filter works the same whichever source a restaurant came from.
+One cuisine vocabulary for Google place types, Yelp category aliases and
+OpenStreetMap cuisine tags, so the cuisine filter works the same whichever
+source a restaurant came from.
 """
 
 # canonical key -> label shown on the page
 LABELS = {
-    "american": "American", "bakery": "Bakery", "breakfast": "Breakfast & brunch",
+    "american": "American", "asian": "Asian", "bakery": "Bakery", "breakfast": "Breakfast & brunch",
     "burgers": "Burgers", "cafe": "Cafe", "chinese": "Chinese", "french": "French",
     "greek": "Greek", "indian": "Indian", "italian": "Italian", "japanese": "Japanese",
     "korean": "Korean", "mediterranean": "Mediterranean", "mexican": "Mexican",
@@ -82,4 +83,35 @@ def merge(*lists):
             if item["key"] not in seen:
                 seen.add(item["key"])
                 out.append(item)
+    return out
+
+
+# OpenStreetMap cuisine=* values -> canonical key. Unlisted values keep their
+# own name. https://wiki.openstreetmap.org/wiki/Key:cuisine
+OSM_VALUES = {
+    "burger": "burgers", "sandwich": "sandwiches", "sushi": "japanese", "ramen": "japanese",
+    "steak_house": "steakhouse", "lebanese": "middle_eastern", "turkish": "middle_eastern",
+    "arab": "middle_eastern", "persian": "middle_eastern", "vegan": "vegetarian",
+    "breakfast": "breakfast", "brunch": "breakfast", "coffee_shop": "cafe",
+    "diner": "american", "regional": "american", "tex-mex": "mexican", "taco": "mexican",
+    "noodle": "asian", "dim_sum": "chinese", "cantonese": "chinese", "sichuan": "chinese",
+    "szechuan": "chinese", "hunan": "chinese", "tapas": "spanish", "pasta": "italian",
+    "oyster": "seafood", "fish": "seafood", "fish_and_chips": "seafood",
+}
+
+OSM_IGNORED = {"yes", "no", "fast_food", "regional;fast_food", "international",
+               "chicken", "wings", "fries", "bubble_tea", "ice_cream", "donut"}
+
+
+def from_osm(value):
+    """'italian;pizza' -> [{'key': 'italian', ...}, {'key': 'pizza', ...}]"""
+    out, seen = [], set()
+    for raw in (value or "").lower().split(";"):
+        v = raw.strip().replace(" ", "_")
+        if not v or v in OSM_IGNORED:
+            continue
+        key = OSM_VALUES.get(v, v)
+        if key not in seen:
+            seen.add(key)
+            out.append(_entry(key))
     return out

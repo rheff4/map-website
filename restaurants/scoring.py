@@ -8,7 +8,8 @@ so you can see exactly why something ranks where it does.
 How a score is built
 --------------------
 1. Recognition (dominant). Each curated entry in data/recognition/<city>.json
-   names a source. Sources from the same publisher form a group, and only the
+   names a source: critics' guides (Michelin, Eater), awards (James Beard,
+   Boston Magazine's Best of Boston) and city / tourism-board guides. Sources from the same publisher form a group, and only the
    best `GROUP_LIMITS[group]` entries in a group count - a Michelin star and a
    Michelin "selected" mention do not both score.
 2. Agreement bonus. Every extra *independent* publisher that vouches for the
@@ -48,6 +49,11 @@ SOURCES = {
     "michelin_selected":     {"label": "Michelin Guide",         "weight": 6,  "group": "michelin"},
     "eater_38":              {"label": "Eater 38",               "weight": 8,  "group": "eater"},
     "eater_heatmap":         {"label": "Eater Heatmap",          "weight": 4,  "group": "eater"},
+    "james_beard_winner":    {"label": "James Beard Award",      "weight": 9,  "group": "james_beard"},
+    "james_beard_nominee":   {"label": "James Beard finalist",   "weight": 7,  "group": "james_beard"},
+    "james_beard_semifinalist": {"label": "James Beard semifinalist", "weight": 4, "group": "james_beard"},
+    "best_of_boston":        {"label": "Best of Boston",         "weight": 4,  "group": "boston_magazine"},
+    "best_of_boston_dish":   {"label": "Best of Boston (dish)",  "weight": 2,  "group": "boston_magazine"},
     "city_guide":            {"label": "City food guide",        "weight": 4,  "group": "city_guide"},
     "thefork":               {"label": "TheFork",                "weight": 2,  "group": "thefork"},
     "zomato":                {"label": "Zomato",                 "weight": 2,  "group": "zomato"},

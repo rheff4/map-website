@@ -14,7 +14,7 @@ straight-line preview, so the tab still works on a machine with no key.
 import math
 from concurrent.futures import ThreadPoolExecutor
 
-from routes import elevation
+from routes import elevation, limits
 from server import cities, env
 from server.fetch import UpstreamError, request_json
 from server.router import ApiError
@@ -45,6 +45,10 @@ OUT_AND_BACK_AIMS = 3
 
 EARTH_R = 6371008.8
 
+# One ORS key serves every visitor: see routes/limits.py.
+BUDGET = limits.OrsBudget.from_env()
+VISITORS = limits.VisitorLimit()
+
 
 def register(router):
     router.get("/api/routes/generate", generate)
@@ -74,12 +78,27 @@ def generate(request):
         raise ApiError(501, "Routing isn't set up on this server: add ORS_API_KEY to .env "
                             "(see .env.example) and restart.")
 
+    # Shared quota first: if the site is busy, don't also charge the visitor.
+    try:
+        reserved = BUDGET.reserve(MAX_CALLS)
+    except limits.Busy as busy:
+        raise _site_busy(busy)
+    try:
+        VISITORS.check(request.client or "unknown")
+    except limits.Busy as busy:
+        BUDGET.settle(reserved, 0)
+        raise _visitor_busy(busy)
+
     start = [lon, lat]
     length = km * 1000
-    if shape == "loop":
-        coords, actual, tried = _best_loop(key, start, length, seed)
-    else:
-        coords, actual, tried = _out_and_back(key, start, length, seed)
+    tried = MAX_CALLS          # if generation fails part-way, refund nothing
+    try:
+        if shape == "loop":
+            coords, actual, tried = _best_loop(key, start, length, seed)
+        else:
+            coords, actual, tried = _out_and_back(key, start, length, seed)
+    finally:
+        BUDGET.settle(reserved, tried)
 
     grid = elevation.load(city["key"])
     elev = elevation.measure(grid, coords)
@@ -99,6 +118,32 @@ def generate(request):
             "stub": False,
         },
     }
+
+
+# ------------------------------------------------------------------- limits
+
+def _wait(seconds):
+    if seconds < 90:
+        return "%d seconds" % seconds
+    if seconds < 90 * 60:
+        return "%d minutes" % round(seconds / 60)
+    return "about %d hours" % round(seconds / 3600)
+
+
+def _visitor_busy(busy):
+    if busy.scope == "day":
+        return ApiError(429, "You've reached today's limit of %d routes on this site. "
+                             "Try again in %s." % (limits.VISITOR_PER_DAY, _wait(busy.retry_after)))
+    return ApiError(429, "You're generating routes faster than this site allows. "
+                         "Try again in %s." % _wait(busy.retry_after))
+
+
+def _site_busy(busy):
+    if busy.scope == "day":
+        return ApiError(503, "This site has used today's route allowance. "
+                             "Try again in %s." % _wait(busy.retry_after))
+    return ApiError(503, "Lots of people are generating routes right now. "
+                         "Try again in %s." % _wait(busy.retry_after))
 
 
 # ---------------------------------------------------------------------- ORS

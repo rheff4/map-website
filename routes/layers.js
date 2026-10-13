@@ -220,7 +220,12 @@
       'line-opacity': 0.85
     },
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    legend: { label: 'Running route', color: '#2b6cb0' }
+    legend: { label: 'Running route', color: '#2b6cb0' },
+    // Required by HeiGIT's terms wherever openrouteservice results are shown,
+    // in exactly this wording.
+    attribution: '&copy; <a href="https://openrouteservice.org/" target="_blank" rel="noopener">' +
+      'openrouteservice</a> by HeiGIT | Data from ' +
+      '<a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
   });
 
   view.addLayer({

@@ -11,6 +11,7 @@ Owner: Rob · Branch: `routes`
 | --- | --- |
 | `layers.js` | The Routes tab: controls, start-point picker, route layer, stats |
 | `api.py` | `GET /api/routes/generate` - routes on streets from OpenRouteService |
+| `limits.py` | Rate limits that protect the shared ORS quota |
 | `elevation.py` | Heights and climb for a route, from the elevation grid |
 | `tools/build_elevation_grid.py` | Builds a city's grid from USGS data. Run once per city |
 | `tests/` | Unit tests, no network: `python -m unittest discover -s routes/tests -t .` |
@@ -46,6 +47,38 @@ What the server does that ORS doesn't:
 
 On test runs from Boston Common, results landed within about 1-8% of the
 requested distance. The page warns when a route is more than 15% off.
+
+### Sharing one key: limits and attribution
+
+Visitors never need an ORS key - the server's key serves everyone. That
+makes its quota shared, and HeiGIT's terms say repeatedly exceeding it gets
+access blocked. `limits.py` puts two guards in front of every ORS call:
+
+| Guard | Limit | When hit |
+| --- | --- | --- |
+| Shared quota | 90% of the plan: 36 calls a minute, 1,800 a day on the free plan | 503, "lots of people are generating routes" |
+| Per visitor | 5 routes a minute, 50 a day | 429, "try again in N seconds" |
+
+Each route reserves its worst case (6 calls) before asking ORS and gives back
+what it didn't use, so simultaneous clicks can't jointly overshoot. The
+shared quota is checked first, so when the site is busy a visitor isn't also
+charged. Counts are in memory: a restart clears them.
+
+On HeiGIT's academic plan (60 a minute, 10,000 a day), set these in `.env`:
+
+```
+ORS_REQUESTS_PER_MINUTE=60
+ORS_REQUESTS_PER_DAY=10000
+```
+
+**When deployed behind a hosting provider's proxy,** set `TRUST_PROXY=1` so
+visitors are told apart by the address the proxy reports. Without it every
+visitor appears to come from the proxy and shares one per-visitor allowance.
+Don't set it without a proxy - anyone could forge their address.
+
+**Attribution:** HeiGIT's terms require "© openrouteservice by HeiGIT | Data
+from OpenStreetMap" wherever results are shown. The route layer declares it,
+and it appears in the map's credit line.
 
 ## Elevation
 

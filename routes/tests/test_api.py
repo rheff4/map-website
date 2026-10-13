@@ -166,5 +166,72 @@ class OutAndBack(unittest.TestCase):
         self.assertLessEqual(calls, api.MAX_CALLS)
 
 
+class RateLimits(unittest.TestCase):
+    """How generate() applies routes/limits.py. ORS and the clock are fake."""
+
+    def setUp(self):
+        from routes import limits
+        self.limits = limits
+        self.now = [1000.0]
+        clock = lambda: self.now[0]                     # noqa: E731
+        self.budget = limits.OrsBudget(per_minute=40, per_day=2000, clock=clock)
+        self.visitors = limits.VisitorLimit(per_minute=5, per_day=50, clock=clock)
+        self.loop = mock.Mock(return_value=([[-71.06, 42.35], [-71.05, 42.36]], 5000.0, 3))
+        for target, value in [("BUDGET", self.budget), ("VISITORS", self.visitors),
+                              ("_best_loop", self.loop)]:
+            p = mock.patch.object(api, target, value)
+            p.start()
+            self.addCleanup(p.stop)
+        p = mock.patch.object(api.env, "secret", return_value="key")
+        p.start()
+        self.addCleanup(p.stop)
+
+    def generate(self, client="1.2.3.4"):
+        return api.generate(Request("GET", "/api/routes/generate", dict(COMMON), None, client=client))
+
+    def calls_held(self):
+        return len(self.budget.minute.events)
+
+    def test_a_route_holds_only_the_calls_it_made(self):
+        self.generate()
+        self.assertEqual(self.calls_held(), 3)          # reserved 6, used 3
+
+    def test_fast_visitor_gets_429_and_costs_the_site_nothing_extra(self):
+        for _ in range(5):
+            self.generate()
+        with self.assertRaises(ApiError) as cm:
+            self.generate()
+        self.assertEqual(cm.exception.status, 429)
+        self.assertIn("Try again in", cm.exception.message)
+        self.assertEqual(self.calls_held(), 15)         # the refused click was refunded
+
+    def test_other_visitors_are_unaffected(self):
+        for _ in range(5):
+            self.generate("1.2.3.4")
+        self.generate("5.6.7.8")
+
+    def test_busy_site_gets_503_and_does_not_charge_the_visitor(self):
+        for _ in range(6):
+            self.budget.reserve(6)                       # all 36 held by others
+        with self.assertRaises(ApiError) as cm:
+            self.generate()
+        self.assertEqual(cm.exception.status, 503)
+        self.assertNotIn("1.2.3.4", self.visitors.visitors)
+
+    def test_failed_generation_keeps_its_whole_reservation(self):
+        # Unknown how many ORS calls were made before it failed: assume all.
+        self.loop.side_effect = ApiError(502, "upstream trouble")
+        with self.assertRaises(ApiError):
+            self.generate()
+        self.assertEqual(self.calls_held(), api.MAX_CALLS)
+
+    def test_bad_input_costs_nothing(self):
+        with self.assertRaises(ApiError):
+            api.generate(Request("GET", "/api/routes/generate",
+                                 dict(COMMON, shape="spiral"), None, client="1.2.3.4"))
+        self.assertEqual(self.calls_held(), 0)
+        self.assertNotIn("1.2.3.4", self.visitors.visitors)
+
+
 if __name__ == "__main__":
     unittest.main()

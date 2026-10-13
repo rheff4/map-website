@@ -6,6 +6,10 @@ keys are read from .env on the server and never reach the browser.
 
     python server/app.py               # http://localhost:8000/
     set PORT=9000 & python server/app.py
+    python server/app.py --no-reload   # don't restart on code changes
+
+It restarts itself whenever a .py file changes (server/reloader.py), so it
+never serves code older than what is on disk.
 
 Features plug in without editing this file: if <feature>/api.py exists and
 defines register(router), it is loaded at startup. See server/router.py.
@@ -25,7 +29,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from server import env  # noqa: E402
+from server import env, reloader  # noqa: E402
 from server.router import ApiError, Request, Router  # noqa: E402
 
 FEATURES = ("restaurants", "routes")
@@ -163,7 +167,7 @@ def main():
         print()
         print("  Port %d is already in use - the site is probably already running." % port)
         print("  Open http://localhost:%d/ or close the other server window first." % port)
-        sys.exit(1)
+        sys.exit(reloader.EXIT_PORT_IN_USE)
     print("  open http://localhost:%d/" % port)
     try:
         httpd.serve_forever()
@@ -174,4 +178,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    # By default a watcher runs the server and restarts it when code changes
+    # (server/reloader.py), so nobody is ever served stale code.
+    if reloader.is_child() or "--no-reload" in sys.argv[1:]:
+        main()
+    else:
+        sys.exit(reloader.run())

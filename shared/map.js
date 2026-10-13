@@ -169,11 +169,15 @@
       /* Swap a layer's GeoJSON without removing and re-adding it. */
       setData: function (id, data) {
         if (!registry[id]) fail('No layer "' + id + '" to update.');
+        data = data || emptyCollection();
         registry[id].data = data;
         whenReady(function () {
           var source = map.getSource(id);
-          if (source) source.setData(data || emptyCollection());
+          if (source) source.setData(data);
         });
+        // Legend counts come from each layer's data, so they go stale unless
+        // redrawn here. Callers no longer need to call refreshLegend() after.
+        view.refreshLegend();
         return view;
       },
 

@@ -24,6 +24,7 @@ Placeholder entries are skipped. Lines marked CHECK need a human look.
 import argparse
 import json
 import os
+import re
 import sys
 import time
 
@@ -57,7 +58,10 @@ def lookup_osm(entry, city, mapped):
     """Geocode the address, then snap to the mapped food place of that name.
     `mapped` is every named food place in the city (one Overpass download)."""
     point = None
-    for query in (entry.get("address"), "%s, %s" % (entry["name"], city["name"])):
+    address = entry.get("address") or ""
+    street_only = re.sub(r"^\s*[\d\-]+[A-Za-z]?\s+", "", address)   # "300 Pier 4 Blvd" -> "Pier 4 Blvd"
+    for query in (address, "%s, %s" % (entry["name"], city["name"]),
+                  street_only if street_only != address else None):
         if not query:
             continue
         point = osm.geocode(query, city)
@@ -94,6 +98,8 @@ def lookup_osm(entry, city, mapped):
 
 
 def main():
+    # The Windows console can't print every character in place names (e.g. "ō").
+    sys.stdout.reconfigure(errors="replace")
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--city", help="city key from shared/cities.json (default: the default city)")
     parser.add_argument("--source", choices=("auto", "osm", "google"), default="auto",

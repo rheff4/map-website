@@ -3,6 +3,7 @@
     "Curated recognition for Boston restaurants - sources with no public API.",
     "One entry = one source vouching for one restaurant. A restaurant on two lists has two entries.",
     "Fields: name, address, source (an id from SOURCES in restaurants/scoring.py), source_url, note (edition / date checked).",
+    "Optional: price (1-4, the source's own $ rating) and cuisine (a key from restaurants/cuisines.py) - used when map data lacks them. Michelin entries carry Michelin's; 'Contemporary' has no cuisine key, so it is left empty.",
     "place_id / lat / lon are filled in by: python -m restaurants.tools.enrich_recognition",
     "Every entry was copied from the source page itself; never add an award from memory. See restaurants/README.md, 'Adding recognition entries'.",
     "Lists change: Eater 38 updates quarterly, Michelin yearly. Re-check and update the note when you do."
@@ -16,8 +17,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/311-omakase",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3431433,
+      "lon": -71.073644,
+      "price": 4,
+      "cuisine": "japanese",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "605, Tremont Street, South End, Boston, Suffolk County, Massachusetts, 02118, United States"
     },
     {
       "name": "Fox & The Knife",
@@ -26,8 +32,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/fox-the-knife",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3406725,
+      "lon": -71.0535353,
+      "price": 2,
+      "cuisine": "italian",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "28, West Broadway, South Boston, Boston, Suffolk County, Massachusetts, 02127, United States"
     },
     {
       "name": "Bar Volpe",
@@ -36,8 +47,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/bar-volpe",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3404121,
+      "lon": -71.0530365,
+      "price": 3,
+      "cuisine": "italian",
+      "osm_id": "node/11415412791",
+      "matched_name": "Bar Volpe",
+      "matched_address": "170 West Broadway, South Boston"
     },
     {
       "name": "Sumiao Hunan Kitchen",
@@ -46,8 +62,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/sumiao-hunan-kitchen",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3658726,
+      "lon": -71.0821143,
+      "price": 2,
+      "cuisine": "chinese",
+      "osm_id": "node/5172091021",
+      "matched_name": "Sumiao Hunan Kitchen",
+      "matched_address": "270 Third Street"
     },
     {
       "name": "Pagu",
@@ -56,8 +77,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/pagu",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3623784,
+      "lon": -71.0989865,
+      "price": 2,
+      "cuisine": "asian",
+      "osm_id": "node/5629471126",
+      "matched_name": "Pagu",
+      "matched_address": "310 Massachusetts Avenue, Cambridge"
     },
     {
       "name": "Jahunger",
@@ -66,8 +92,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/jahunger",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.357395,
+      "lon": -71.1077988,
+      "price": 2,
+      "cuisine": "asian",
+      "osm_id": "node/566890089",
+      "matched_name": "Jahunger Taste of Uyghur",
+      "matched_address": "272 Brookline Street"
     },
     {
       "name": "Mahaniyom",
@@ -76,8 +107,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/brookline_2914829/restaurant/mahaniyom",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3326339,
+      "lon": -71.1187699,
+      "price": 2,
+      "cuisine": "thai",
+      "osm_id": "node/12596111763",
+      "matched_name": "Mahaniyom",
+      "matched_address": "236 Washington Street, Brookline"
     },
     {
       "name": "Somaek",
@@ -86,8 +122,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/somaek",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3552282,
+      "lon": -71.0620613,
+      "price": 2,
+      "cuisine": "korean",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "Temple Place, Downtown Crossing, Downtown, Boston, Suffolk County, Massachusetts, 02133, United States"
     },
     {
       "name": "Neptune Oyster",
@@ -96,8 +137,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/neptune-oyster",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3632431,
+      "lon": -71.0560033,
+      "price": 3,
+      "cuisine": "seafood",
+      "osm_id": "node/4418911292",
+      "matched_name": "Neptune Oyster",
+      "matched_address": "63 Salem Street"
     },
     {
       "name": "Carmelina's",
@@ -106,8 +152,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/carmelina-s",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3638729,
+      "lon": -71.0541727,
+      "price": 2,
+      "cuisine": "italian",
+      "osm_id": "node/2430572067",
+      "matched_name": "Carmelina's",
+      "matched_address": "307,309, Hanover Street, North End, Boston, Suffolk County, Massachusetts, 02113, United States"
     },
     {
       "name": "Zhi Wei Cafe",
@@ -116,8 +167,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/zhi-wei-cafe",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3510745,
+      "lon": -71.057113,
+      "price": 1,
+      "cuisine": "chinese",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "102,104,106, South Street, Leather District, Boston, Suffolk County, Massachusetts, 02111, United States"
     },
     {
       "name": "Wa Shin",
@@ -126,8 +182,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/wa-shin",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3503392,
+      "lon": -71.0688965,
+      "price": 4,
+      "cuisine": "japanese",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "222, Stuart Street, Bay Village, Boston, Suffolk County, Massachusetts, 02116, United States"
     },
     {
       "name": "Mooncusser",
@@ -136,8 +197,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/mooncusser",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3498265,
+      "lon": -71.0706161,
+      "price": 4,
+      "cuisine": null,
+      "osm_id": "node/7811482143",
+      "matched_name": "Mooncusser Fish House",
+      "matched_address": "304 Stuart Street, Boston"
     },
     {
       "name": "Woods Hill Pier 4",
@@ -146,8 +212,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/woods-hill-pier-4",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.350956,
+      "lon": -71.0435389,
+      "price": 3,
+      "cuisine": "american",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "Seaport Blvd @ Pier 4 Blvd, Seaport Boulevard, Seaport, Boston, Suffolk County, Massachusetts, 02210, United States"
     },
     {
       "name": "La Padrona",
@@ -156,8 +227,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/la-padrona",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3491599,
+      "lon": -71.0757933,
+      "price": 3,
+      "cuisine": "italian",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "38, Trinity Place, Back Bay, Boston, Suffolk County, Massachusetts, 02116, United States"
     },
     {
       "name": "Lenox Sophia",
@@ -166,8 +242,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/lenox-sophia",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3424313,
+      "lon": -71.0546178,
+      "price": 4,
+      "cuisine": null,
+      "osm_id": "node/11507015902",
+      "matched_name": "Lenox Sophia",
+      "matched_address": "87 A Street, Boston"
     },
     {
       "name": "Select Oyster Bar",
@@ -176,8 +257,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/select-oyster-bar",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3486374,
+      "lon": -71.0840371,
+      "price": 3,
+      "cuisine": "seafood",
+      "osm_id": "node/3601388788",
+      "matched_name": "Select Oyster Bar",
+      "matched_address": "50 Gloucester Street, Boston"
     },
     {
       "name": "Asta",
@@ -186,8 +272,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/asta",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3498495,
+      "lon": -71.0892527,
+      "price": 4,
+      "cuisine": null,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "47, Massachusetts Avenue, Back Bay, Boston, Suffolk County, Massachusetts, 02115, United States"
     },
     {
       "name": "Toro",
@@ -196,8 +287,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/toro",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3369711,
+      "lon": -71.0759287,
+      "price": 2,
+      "cuisine": "spanish",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "1704;1706, Washington Street, South End, Boston, Suffolk County, Massachusetts, 02118, United States"
     },
     {
       "name": "Oleana",
@@ -206,8 +302,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/oleana",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3705673,
+      "lon": -71.0971787,
+      "price": 3,
+      "cuisine": "middle_eastern",
+      "osm_id": "node/3577716497",
+      "matched_name": "Oleana",
+      "matched_address": "134 Hampshire Street, Cambridge"
     },
     {
       "name": "Urban Hearth",
@@ -216,8 +317,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/urban-hearth",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3945095,
+      "lon": -71.1267233,
+      "price": 3,
+      "cuisine": "american",
+      "osm_id": "node/13124824563",
+      "matched_name": "Urban Hearth",
+      "matched_address": "2263 Massachusetts Ave"
     },
     {
       "name": "Pammy's",
@@ -226,8 +332,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/pammy-s",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3684329,
+      "lon": -71.1091866,
+      "price": 3,
+      "cuisine": "mediterranean",
+      "osm_id": "node/2777249475",
+      "matched_name": "Pammy's",
+      "matched_address": "928 Massachusetts Avenue, Cambridge"
     },
     {
       "name": "Moëca",
@@ -236,8 +347,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/moeca",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.381845,
+      "lon": -71.119947,
+      "price": 4,
+      "cuisine": "seafood",
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "1, Shepard Street, Neighborhood Nine, Cambridge, Middlesex County, Massachusetts, 02138, United States"
     },
     {
       "name": "Giulia",
@@ -246,8 +362,13 @@
       "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/giulia-1218584",
       "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3825055,
+      "lon": -71.1198438,
+      "price": 3,
+      "cuisine": "italian",
+      "osm_id": "node/6114610852",
+      "matched_name": "Giulia",
+      "matched_address": "1682 Massachusetts Avenue"
     },
     {
       "name": "Spoke Wine Bar",
@@ -256,8 +377,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3988942,
+      "lon": -71.1243071,
+      "osm_id": "node/5282762077",
+      "matched_name": "Spoke Wine Bar",
+      "matched_address": "89 Holland Street"
     },
     {
       "name": "Urban Hearth",
@@ -266,8 +390,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3945095,
+      "lon": -71.1267233,
+      "osm_id": "node/13124824563",
+      "matched_name": "Urban Hearth",
+      "matched_address": "2263 Massachusetts Ave"
     },
     {
       "name": "Gustazo Cuban Kitchen & Bar",
@@ -276,8 +403,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3913617,
+      "lon": -71.1227994,
+      "osm_id": "node/6080998825",
+      "matched_name": "Gustazo Cuban Kitchen & Bar",
+      "matched_address": "2067 Massachusetts Avenue, Cambridge"
     },
     {
       "name": "Sarma",
@@ -286,8 +416,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3881868,
+      "lon": -71.0954753,
+      "osm_id": "node/2622543069",
+      "matched_name": "Sarma",
+      "matched_address": "249"
     },
     {
       "name": "La Royal",
@@ -296,8 +429,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3828787,
+      "lon": -71.1315837,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "221;223, Concord Avenue, Neighborhood Nine, Cambridge, Middlesex County, Massachusetts, 02140, United States"
     },
     {
       "name": "Moëca",
@@ -306,8 +442,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.381845,
+      "lon": -71.119947,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "1, Shepard Street, Neighborhood Nine, Cambridge, Middlesex County, Massachusetts, 02138, United States"
     },
     {
       "name": "Taquería Jalisco",
@@ -316,8 +455,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3787485,
+      "lon": -71.0281603,
+      "osm_id": "node/10801804207",
+      "matched_name": "Taquiera Jalisco",
+      "matched_address": "291 Bennington Street, East Boston"
     },
     {
       "name": "Lehrhaus",
@@ -326,8 +468,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3783225,
+      "lon": -71.1068992,
+      "osm_id": "node/13115425534",
+      "matched_name": "Lehrhaus",
+      "matched_address": "425 Washington Street, Somerville"
     },
     {
       "name": "Moona",
@@ -336,8 +481,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3741265,
+      "lon": -71.101103,
+      "osm_id": "node/1034918636",
+      "matched_name": "Moona",
+      "matched_address": "243 Hampshire Street, Cambridge"
     },
     {
       "name": "Sumiao Hunan Kitchen",
@@ -346,8 +494,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3658726,
+      "lon": -71.0821143,
+      "osm_id": "node/5172091021",
+      "matched_name": "Sumiao Hunan Kitchen",
+      "matched_address": "270 Third Street"
     },
     {
       "name": "Si Cara",
@@ -356,8 +507,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3637672,
+      "lon": -71.1005995,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "Jaho Coffee Roaster & Wine Bar, 425, Massachusetts Avenue, Harlow Square, The Port, Cambridge, Middlesex County, Massachusetts, 02139, United States"
     },
     {
       "name": "Brookline Lunch",
@@ -366,8 +520,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3638017,
+      "lon": -71.101702,
+      "osm_id": "node/2709425519",
+      "matched_name": "Brookline Lunch",
+      "matched_address": "9 Brookline Street, Cambridge"
     },
     {
       "name": "Fallow Kin",
@@ -376,8 +533,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3634478,
+      "lon": -71.0987301,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "853, Main Street, Harlow Square, The Port, Cambridge, Middlesex County, Massachusetts, 02139, United States"
     },
     {
       "name": "Neptune Oyster",
@@ -386,8 +546,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3632431,
+      "lon": -71.0560033,
+      "osm_id": "node/4418911292",
+      "matched_name": "Neptune Oyster",
+      "matched_address": "63 Salem Street"
     },
     {
       "name": "Jahunger",
@@ -396,8 +559,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.357395,
+      "lon": -71.1077988,
+      "osm_id": "node/566890089",
+      "matched_name": "Jahunger Taste of Uyghur",
+      "matched_address": "272 Brookline Street"
     },
     {
       "name": "Zurito",
@@ -406,8 +572,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3567657,
+      "lon": -71.0699689,
+      "osm_id": "node/7828185894",
+      "matched_name": "ZURiTO",
+      "matched_address": "26 Charles Street, Boston"
     },
     {
       "name": "Aatma Curry House",
@@ -416,8 +585,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3557045,
+      "lon": -71.147939,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "Widowmaker Taproom & Kitchen, 190, North Beacon Street, Brighton, Boston, Suffolk County, Massachusetts, 02135, United States"
     },
     {
       "name": "Taiwan Cafe",
@@ -426,8 +598,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3514688,
+      "lon": -71.0602575,
+      "osm_id": "node/10019090619",
+      "matched_name": "Taiwan Cafe",
+      "matched_address": "34 Oxford Street"
     },
     {
       "name": "Mooncusser",
@@ -436,8 +611,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3498265,
+      "lon": -71.0706161,
+      "osm_id": "node/7811482143",
+      "matched_name": "Mooncusser Fish House",
+      "matched_address": "304 Stuart Street, Boston"
     },
     {
       "name": "Grill 23 & Bar",
@@ -446,8 +624,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3494568,
+      "lon": -71.0719203,
+      "osm_id": "node/5164129069",
+      "matched_name": "Grill 23",
+      "matched_address": "161, Berkeley Street, Back Bay, Boston, Suffolk County, Massachusetts, 02116, United States"
     },
     {
       "name": "Bab Al-Yemen Boston",
@@ -456,8 +637,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3485767,
+      "lon": -71.0934727,
+      "osm_id": "node/12451713401",
+      "matched_name": "Bab Al-Yemen",
+      "matched_address": "468, Commonwealth Avenue, Fenway-Kenmore, Boston, Suffolk County, Massachusetts, 02215, United States"
     },
     {
       "name": "La Padrona",
@@ -466,8 +650,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3491599,
+      "lon": -71.0757933,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "38, Trinity Place, Back Bay, Boston, Suffolk County, Massachusetts, 02116, United States"
     },
     {
       "name": "Kaia",
@@ -476,8 +663,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3443564,
+      "lon": -71.0641762,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "380, Harrison Avenue, South End, Boston, Suffolk County, Massachusetts, 02118, United States"
     },
     {
       "name": "Ganko Ittetsu Ramen",
@@ -486,18 +676,24 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3431415,
+      "lon": -71.1235864,
+      "osm_id": "node/4419727407",
+      "matched_name": "Ganko Ittetsu Ramen",
+      "matched_address": "Maria's Experienced Alterations, 318, Harvard Street, Coolidge Corner, North Brookline, Brookline, Norfolk County, Massachusetts, 02446, United States"
     },
     {
-      "name": "Three 1 One",
+      "name": "311 Omakase",
       "address": "605 Tremont St, Boston, MA 02118",
       "source": "eater_38",
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
-      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13. Eater lists it as 'Three 1 One' - same restaurant, same address (605 Tremont St)",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3431433,
+      "lon": -71.073644,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "605, Tremont Street, South End, Boston, Suffolk County, Massachusetts, 02118, United States"
     },
     {
       "name": "SRV",
@@ -506,8 +702,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3409018,
+      "lon": -71.0816593,
+      "osm_id": "node/6813212892",
+      "matched_name": "SRV",
+      "matched_address": "569 Columbus Avenue, Boston"
     },
     {
       "name": "Mahaniyom",
@@ -516,8 +715,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3326339,
+      "lon": -71.1187699,
+      "osm_id": "node/12596111763",
+      "matched_name": "Mahaniyom",
+      "matched_address": "236 Washington Street, Brookline"
     },
     {
       "name": "Suya Joint",
@@ -526,8 +728,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.328328,
+      "lon": -71.0819631,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "185, Dudley Street, Nubian Square, Roxbury, Boston, Suffolk County, Massachusetts, 02119, United States"
     },
     {
       "name": "Blue Nile",
@@ -536,8 +741,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3222413,
+      "lon": -71.1095921,
+      "osm_id": "node/5939912385",
+      "matched_name": "Blue Nilea",
+      "matched_address": "389 Centre Street, Jamaica Plain"
     },
     {
       "name": "Singh's Roti Shop",
@@ -546,8 +754,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3163847,
+      "lon": -71.0662223,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "554-562, Columbia Road, Uphams Corner, Dorchester, Boston, Suffolk County, Massachusetts, 02125, United States"
     },
     {
       "name": "Merengue Restaurant",
@@ -556,8 +767,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3191515,
+      "lon": -71.0775571,
+      "osm_id": null,
+      "matched_name": null,
+      "matched_address": "156-162, Blue Hill Avenue, Roxbury, Boston, Suffolk County, Massachusetts, 02125, United States"
     },
     {
       "name": "Comfort Kitchen",
@@ -566,8 +780,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3174749,
+      "lon": -71.0640523,
+      "osm_id": "way/212124418",
+      "matched_name": "Comfort Kitchen",
+      "matched_address": "611 Columbia Road, Dorchester"
     },
     {
       "name": "Tonino",
@@ -576,8 +793,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3125272,
+      "lon": -71.1143037,
+      "osm_id": "node/4065241697",
+      "matched_name": "Tonino",
+      "matched_address": "669 Centre Street"
     },
     {
       "name": "Brassica Kitchen & Cafe",
@@ -586,8 +806,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.3002732,
+      "lon": -71.113132,
+      "osm_id": "node/4045929118",
+      "matched_name": "Brassica Kitchen + Cafe",
+      "matched_address": "3710 Washington Street, Jamaica Plain"
     },
     {
       "name": "Himalayan Bistro",
@@ -596,8 +819,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.2873556,
+      "lon": -71.1497534,
+      "osm_id": "node/12330874554",
+      "matched_name": "Himalayan Bistro",
+      "matched_address": "1735 Centre Street, Boston"
     },
     {
       "name": "Lê Madeline",
@@ -606,8 +832,11 @@
       "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
       "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
       "place_id": null,
-      "lat": null,
-      "lon": null
+      "lat": 42.2732059,
+      "lon": -71.0254917,
+      "osm_id": "way/29832242",
+      "matched_name": "Lê Madeline",
+      "matched_address": "409 Hancock Street, Quincy"
     }
   ]
 }

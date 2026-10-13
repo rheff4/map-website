@@ -128,7 +128,9 @@ def summarize(place, lat, lon, now=None):
                         for e in place["recognition"] if e.get("cuisine") in cuisines.LABELS]
     return {
         "id": place["key"],
-        "name": main["name"],
+        # A recognised place keeps the name its critics publish - map data can
+        # lag a rename ("Mooncusser Fish House") or style it oddly ("ZURiTO").
+        "name": place["recognition"][0]["name"] if place["recognition"] else main["name"],
         "address": _first(place, "address"),
         "lat": main["lat"],
         "lon": main["lon"],

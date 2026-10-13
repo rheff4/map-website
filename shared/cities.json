@@ -1,5 +1,5 @@
 {
-  "_readme": "One entry per launch city. Adding a city = add an entry here + its data files. Coordinates are [longitude, latitude]; bounds are [[west, south], [east, north]]. timezone is the IANA name; utc_offset_minutes (standard time) and dst ('us', 'eu' or none) are the fallback when the system has no time-zone database, as on Windows.",
+  "_readme": "One entry per launch city. Adding a city = add an entry here + its data files. Coordinates are [longitude, latitude]; bounds are [[west, south], [east, north]]. timezone is the IANA name; utc_offset_minutes (standard time) and dst ('us', 'eu' or none) are the fallback when the system has no time-zone database, as on Windows. boundary is the city's legal outline (GeoJSON); licences, if present, is an open-data list of active food licences that only covers places inside that boundary.",
   "default": "boston",
   "cities": {
     "boston": {
@@ -11,7 +11,14 @@
       "recognition": "data/recognition/boston.json",
       "timezone": "America/New_York",
       "utc_offset_minutes": -300,
-      "dst": "us"
+      "dst": "us",
+      "boundary": "data/boundaries/boston.geojson",
+      "licences": {
+        "label": "City of Boston",
+        "ckan_url": "https://data.boston.gov",
+        "resource_id": "f1e13724-284d-478c-b8bc-ef042aa5b70b",
+        "dataset_url": "https://data.boston.gov/dataset/active-food-establishment-licenses"
+      }
     }
   }
 }

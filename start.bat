@@ -17,6 +17,6 @@ start "" /min powershell -NoProfile -WindowStyle Hidden -Command "Start-Sleep 2;
 python server\app.py
 
 echo.
-echo The server has stopped. If it said the address is already in use,
+echo The server has stopped. If it said the port is already in use,
 echo the site is already running in another window.
 pause

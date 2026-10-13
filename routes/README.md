@@ -10,10 +10,42 @@ Owner: Rob · Branch: `routes`
 | File | What |
 | --- | --- |
 | `layers.js` | The Routes tab: controls, start-point picker, route layer, stats |
+| `api.py` | `GET /api/routes/generate` - routes on streets from OpenRouteService |
 | `elevation.py` | Heights and climb for a route, from the elevation grid |
 | `tools/build_elevation_grid.py` | Builds a city's grid from USGS data. Run once per city |
 | `tests/` | Unit tests, no network: `python -m unittest discover -s routes/tests -t .` |
 | `../data/elevation/<city>.json` | The generated grid. Do not edit by hand |
+
+## Generating a route
+
+```
+GET /api/routes/generate?lon=&lat=&km=5&shape=loop|out-and-back&seed=1
+```
+
+Returns a GeoJSON LineString Feature with `requestedM`, `lengthM` (actual),
+`ascent`, `descent` and an `elevation` summary. Routes use ORS's
+`foot-walking` profile, called from the server so `ORS_API_KEY` never reaches
+the browser. Without a key it answers 501 and the tab shows a straight-line
+preview with an explanation, so it still works on a machine with no key.
+
+What the server does that ORS doesn't:
+
+- **Avoids ferries.** ORS's walking profile treats ferry lines as walkable.
+  Near the Seaport a "5 km" loop came back as 46 km, 36 of them by boat.
+- **Loops:** asks for three at once and keeps the one closest to the
+  distance. ORS's round trips miss by up to ~18%, much more where few streets
+  connect. If the best is still more than 10% off, it asks again for a scaled
+  length - a request that keeps returning 8 km is asked for ~3 km next.
+- **Out-and-back:** ORS only makes loops, so this aims at a turnaround,
+  routes there, and retraces the leg. It re-aims to correct the length and,
+  if a direction is blocked - aim across the harbour and ORS snaps to the same
+  spot on the shore however far you aim - tries another direction.
+- **Caps ORS calls at 6 per click**, so the free tier (2,000 a day, 40 a
+  minute) allows 330+ routes a day. Hitting the per-minute limit gives a
+  "try again shortly" message, not an error page.
+
+On test runs from Boston Common, results landed within about 1-8% of the
+requested distance. The page warns when a route is more than 15% off.
 
 ## Elevation
 

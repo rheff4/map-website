@@ -6,9 +6,9 @@
  * PRD feature: a running route generator with adjustable distance, start
  * point, loop or out-and-back, and elevation.
  *
- * Everything here talks to generateRoute() and nothing else. Today that
- * function does local geometry and returns a fake route; when the backend
- * exists it becomes a fetch() and nothing downstream changes. See the SEAM
+ * Everything here talks to generateRoute() and nothing else. It asks the
+ * server (routes/api.py) for a real route on streets; if the server has no
+ * OpenRouteService key it falls back to a straight-line preview. See the SEAM
  * comment below.
  *
  * Map contract: shared/README.md. All ids namespaced `routes:` / `routes-`.
@@ -85,9 +85,9 @@
   // ------------------------------------------------- the generator (SEAM)
 
   /*
-   * A ring through the start point whose circumference is the target length.
-   * Cuts across buildings and water - it is a shape of the right size, not a
-   * runnable route. Real routing needs OpenRouteService.
+   * Fallback only. A ring through the start point whose circumference is the
+   * target length. Cuts across buildings and water - a shape of the right
+   * size, not a runnable route - so it's used only when the server can't route.
    */
   function stubLoop(start, lengthM, seed) {
     var radius = lengthM / (2 * Math.PI);
@@ -117,37 +117,53 @@
   }
 
   /*
-   * SEAM. Everything else in this file depends only on this signature.
+   * SEAM. Everything else in this file depends only on this signature:
+   * opts -> Promise of a GeoJSON LineString Feature.
    *
-   * Today: local geometry, resolved immediately.
-   * Later: POST to a backend that holds ORS_API_KEY, e.g.
-   *
-   *     return fetch('/api/routes/generate', {
-   *       method: 'POST',
-   *       headers: { 'Content-Type': 'application/json' },
-   *       body: JSON.stringify(opts)
-   *     }).then(function (r) { return r.json(); });
-   *
-   * The key must stay server-side: this repo is public. ORS returns the same
-   * GeoJSON shape, plus real ascent/descent and a third elevation value in
-   * each coordinate.
+   * Calls GET /api/routes/generate (routes/api.py), which asks
+   * OpenRouteService for routes on streets and paths and measures their climb
+   * from the USGS elevation grid. The ORS key stays on the server - this repo
+   * is public. A 501 means the server has no key; the preview stands in so
+   * the tab still works, and the results panel says why.
    */
   function generateRoute(opts) {
+    var query = [
+      'lon=' + opts.start[0],
+      'lat=' + opts.start[1],
+      'km=' + (opts.lengthM / 1000),
+      'shape=' + encodeURIComponent(opts.shape),
+      'seed=' + opts.seed
+    ].join('&');
+
+    return fetch('/api/routes/generate?' + query).then(function (r) {
+      return r.json().then(function (body) {
+        if (r.ok) return body;
+        // 501: this server has no ORS key. Fall back to the preview so the
+        // tab still works, and say why.
+        if (r.status === 501) return stubRoute(opts, body.error);
+        throw new Error(body.error || ('HTTP ' + r.status));
+      });
+    });
+  }
+
+  /* The straight-line preview, used only when the server can't route. */
+  function stubRoute(opts, reason) {
     var coords = opts.shape === 'out-and-back'
       ? stubOutAndBack(opts.start, opts.lengthM, opts.seed)
       : stubLoop(opts.start, opts.lengthM, opts.seed);
 
-    return Promise.resolve({
+    return {
       type: 'Feature',
       geometry: { type: 'LineString', coordinates: coords },
       properties: {
         requestedM: opts.lengthM,
         shape: opts.shape,
-        ascent: null,      // no elevation until the real API is wired up
+        ascent: null,
         descent: null,
-        stub: true
+        stub: true,
+        stubReason: reason
       }
-    });
+    };
   }
 
   // ------------------------------------------------------------ formatting
@@ -318,6 +334,7 @@
 
   els.generate.addEventListener('click', function () {
     els.generate.disabled = true;
+    els.generate.textContent = 'Finding a route…';
     generateRoute({
       start: state.start,
       lengthM: state.lengthM,
@@ -333,16 +350,32 @@
         err.message + '</p>';
     }).then(function () {
       els.generate.disabled = false;
+      els.generate.textContent = 'Generate route';
     });
   });
 
+  // Above this, the page says plainly that the route isn't the length asked
+  // for - usually because few streets connect near the start point.
+  var LENGTH_WARNING_PCT = 15;
+
   function showResults(route) {
-    var coords = route.geometry.coordinates;
-    var actual = lengthOf(coords);
-    var requested = route.properties.requestedM;
+    var p = route.properties;
+    var actual = p.lengthM || lengthOf(route.geometry.coordinates);
+    var requested = p.requestedM;
     var delta = 100 * (actual - requested) / requested;
     var seconds = (actual / 1000) * state.paceSecPerKm;
-    var ascent = route.properties.ascent;
+    var climb = p.ascent === null || p.ascent === undefined
+      ? '&mdash;'
+      : '+' + Math.round(p.ascent) + ' m' +
+        (p.elevation && !p.elevation.complete ? ' <span style="color:#666">(partial)</span>' : '');
+
+    var notes = [];
+    if (p.stub) {
+      notes.push('Straight-line preview, not a real route. ' + (p.stubReason || ''));
+    } else if (Math.abs(delta) > LENGTH_WARNING_PCT) {
+      notes.push('Couldn’t get close to ' + km(requested) + ' from here — ' +
+        'few streets connect near this start point. Try generating again, or move the start.');
+    }
 
     els.results.innerHTML = [
       '<dl>',
@@ -350,15 +383,11 @@
       '  <dt>Actual</dt><dd>' + km(actual) +
         ' <span style="color:#666">(' + (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%)</span></dd>',
       '  <dt>Est. time</dt><dd>' + clock(seconds) + '</dd>',
-      '  <dt>Elevation</dt><dd>' +
-        (ascent === null ? '&mdash;' : '+' + Math.round(ascent) + ' m') + '</dd>',
-      '</dl>',
-      route.properties.stub
-        ? '<p class="routes-note">Straight-line preview. Routes will follow real ' +
-          'streets, and elevation will appear, once the OpenRouteService backend ' +
-          'is wired up.</p>'
-        : ''
-    ].join('\n');
+      '  <dt>Climb</dt><dd>' + climb + '</dd>',
+      '</dl>'
+    ].concat(notes.map(function (n) {
+      return '<p class="routes-note">' + n + '</p>';
+    })).join('\n');
   }
 
   // Clicking the map moves the start point. Note this fires for clicks on

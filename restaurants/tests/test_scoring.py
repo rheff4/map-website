@@ -38,6 +38,17 @@ class RecognitionTest(unittest.TestCase):
         limit = scoring.GROUP_LIMITS["influencer"]
         self.assertEqual(many["score"], limit * scoring.SOURCES["influencer"]["weight"])
 
+    def test_supporting_source_alone_does_not_recognise(self):
+        alone = scoring.score_place(place(["meet_boston"]))
+        self.assertFalse(alone["recognised"])
+        self.assertEqual(alone["score"], 0)
+
+    def test_supporting_source_adds_to_a_real_one_without_agreement_bonus(self):
+        both = scoring.score_place(place(["eater_38", "meet_boston"]))
+        self.assertTrue(both["recognised"])
+        self.assertEqual(both["score"], scoring.SOURCES["eater_38"]["weight"]
+                         + scoring.SOURCES["meet_boston"]["weight"])
+
     def test_unknown_source_is_ignored(self):
         self.assertEqual(scoring.score_place(place(["my_blog"]))["score"], 0)
 

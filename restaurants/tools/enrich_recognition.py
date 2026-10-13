@@ -105,7 +105,8 @@ def main():
     parser.add_argument("--source", choices=("auto", "osm", "google"), default="auto",
                         help="where to look entries up (default: Google if a key is set, else OSM)")
     parser.add_argument("--dry-run", action="store_true", help="print results, do not write the file")
-    parser.add_argument("--force", action="store_true", help="look up entries that already have a location")
+    parser.add_argument("--force", action="store_true",
+                        help="look up again entries that already have a location (overwrites hand fixes)")
     args = parser.parse_args()
 
     env.load(os.path.join(ROOT, ".env"))
@@ -136,7 +137,8 @@ def main():
     for entry in data.get("entries", []):
         if entry.get("placeholder"):
             continue
-        located = entry.get("lat") is not None and (entry.get("place_id") or entry.get("osm_id"))
+        # Anything already placed is left alone - including hand fixes - unless --force.
+        located = entry.get("lat") is not None
         if located and not args.force:
             continue
 

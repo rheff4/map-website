@@ -31,7 +31,8 @@ python -m unittest discover -s restaurants/tests -t .
 | Source | Cost | Gives | Missing |
 | --- | --- | --- | --- |
 | **OpenStreetMap** (default) | Free | Name, location, cuisine, website, opening hours for about a third of places | Ratings; price almost never |
-| Curated recognition file | Free | Michelin / Eater recognition; Michelin's price and cuisine | Only covers listed places |
+| Curated recognition file | Free | Michelin, Eater, James Beard, Best of Boston, Meet Boston; Michelin's price and cuisine | Only covers listed places |
+| City of Boston licences ([data.boston.gov](https://data.boston.gov/dataset/active-food-establishment-licenses)) | Free | Green "Licensed" label when a place matches an active food licence | Boston city limits only; a miss proves nothing, so it never hides a place |
 | Google Places (optional) | Card needed; free under ~1,000 requests/month | Ratings, price, hours for most places | - |
 | Yelp (optional) | Paid after trial | Second rating source | Hours |
 
@@ -40,10 +41,11 @@ anyway - see below), non-recognised places are sorted by distance, the price
 filter works for the Michelin-listed places, and "open now" works wherever OSM
 or Google has hours. Places with unknown hours are hidden by "open now".
 
-OpenStreetMap's Overpass servers are run by volunteers and are sometimes
-busy; the page then shows "OpenStreetMap unavailable - try again in a minute".
-Results are cached for `CACHE_TTL_HOURS` (default 7 days), so a repeat search
-of the same area is instant and makes no request.
+OpenStreetMap's Overpass servers are run by volunteers and are often busy, so
+searches don't call them: one request downloads every named food place in the
+city (~2,700, cached in `.cache/`), and each search filters that copy locally
+in about a second. A copy older than a day is still used while a fresh one
+downloads in the background; only the very first run waits for it.
 
 **Adding Google or Yelp later** - put a key in `.env` and restart:
 
@@ -101,13 +103,20 @@ Michelin, Eater, TheFork, Zomato, city guides and creators have no usable
 public API, so recognition is a hand-curated file per city:
 `data/recognition/boston.json`.
 
-**What's in it now** (checked 2026-10-13, each entry linking to its source):
+**What's in it now** - 230 entries for 180 restaurants, each copied from its
+source page (checked 2026-10-13) and linking to it:
 
-- **MICHELIN Guide Boston**: all 24 restaurants inside the city bounds - 1 star
-  (311 Omakase), 6 Bib Gourmand, 17 recommended. Thistle & Leek (Newton
-  Centre) and Nightshade Noodle Bar (Lynn) are outside the bounds and left out.
-- **Eater 38** (Oct 8 2026 edition): 36 of the 38 - Rubato (South Walpole) and
-  Thaiger Den (Malden) are outside the bounds.
+| Source | Entries | Weight | Notes |
+| --- | --- | --- | --- |
+| MICHELIN Guide Boston | 24 | 10 / 8 / 6 | 1 star (311 Omakase), 6 Bib Gourmand, 17 recommended |
+| Eater 38 (Oct 8 2026) | 37 | 8 | Rubato's printed town (South Walpole) corrected to Quincy |
+| James Beard Awards 2024-26 | 22 | 7 / 4 | 5 finalists, rest semifinalists; no MA winners those years; bar/drinks awards and closed Chickadee left out |
+| Best of Boston 2026 | 48 | 4 / 2 | 39 restaurant + 9 dish awards; novelty categories left out |
+| Meet Boston | 99 | 2, supporting | 8 selective "best of" articles; **counts only alongside another source** because its guides mostly feature paying members |
+
+Left out because they are outside the city bounds: Thistle & Leek (Newton
+Centre), Nightshade Noodle Bar (Lynn), Thaiger Den (Malden), and a few
+suburban Best of Boston / James Beard picks.
 
 Each entry has been located with the enrichment tool (step 3). Michelin
 entries also carry Michelin's price and cuisine, which fill in for map data.

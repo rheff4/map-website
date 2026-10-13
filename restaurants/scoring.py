@@ -12,8 +12,10 @@ How a score is built
    Boston Magazine's Best of Boston) and city / tourism-board guides. Sources from the same publisher form a group, and only the
    best `GROUP_LIMITS[group]` entries in a group count - a Michelin star and a
    Michelin "selected" mention do not both score.
+   A source marked "supporting" (Meet Boston) only adds points when another
+   source also vouches for the place; alone it scores nothing.
 2. Agreement bonus. Every extra *independent* publisher that vouches for the
-   place adds AGREEMENT_BONUS. Two critics agreeing is a much stronger signal
+   place adds AGREEMENT_BONUS (supporting sources don't count). Two critics agreeing is a much stronger signal
    than one critic shouting.
 3. Ratings (supporting). Google and Yelp ratings are shrunk towards a typical
    rating in proportion to how few reviews there are (a Bayesian average), so
@@ -55,6 +57,11 @@ SOURCES = {
     "best_of_boston":        {"label": "Best of Boston",         "weight": 4,  "group": "boston_magazine"},
     "best_of_boston_dish":   {"label": "Best of Boston (dish)",  "weight": 2,  "group": "boston_magazine"},
     "city_guide":            {"label": "City food guide",        "weight": 4,  "group": "city_guide"},
+    # Supporting only: adds points to a place another source recognises, but
+    # never makes a place "recognised" by itself. Meet Boston's guides mostly
+    # feature its paying members, so on its own it is not a quality signal.
+    "meet_boston":           {"label": "Meet Boston guide",      "weight": 2,  "group": "meet_boston",
+                              "supporting": True},
     "thefork":               {"label": "TheFork",                "weight": 2,  "group": "thefork"},
     "zomato":                {"label": "Zomato",                 "weight": 2,  "group": "zomato"},
     "influencer":            {"label": "Local food creator",     "weight": 2,  "group": "influencer"},
@@ -131,8 +138,10 @@ def recognition_points(entries):
         if source:
             by_group.setdefault(source["group"], []).append((source, entry))
 
-    points, rows = 0.0, []
+    points, rows, vouching = 0.0, [], []
     for group, items in by_group.items():
+        if not all(source.get("supporting") for source, _ in items):
+            vouching.append(group)
         items.sort(key=lambda item: -item[0]["weight"])
         limit = GROUP_LIMITS.get(group, 1)
         for i, (source, entry) in enumerate(items):
@@ -151,7 +160,12 @@ def recognition_points(entries):
             })
 
     rows.sort(key=lambda r: -r["points"])
-    return points, rows, list(by_group)
+    # Only groups that can vouch on their own make a place recognised and
+    # count towards the agreement bonus.
+    if not vouching:
+        return 0.0, [dict(r, points=0, why="supporting source - counts only alongside another")
+                     for r in rows], []
+    return points, rows, vouching
 
 
 def rating_points(platform, listing):

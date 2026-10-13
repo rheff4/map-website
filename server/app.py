@@ -15,6 +15,7 @@ Standard library only - nothing to install.
 import importlib
 import json
 import os
+import socket
 import sys
 import traceback
 import urllib.parse
@@ -119,6 +120,19 @@ class Handler(SimpleHTTPRequestHandler):
         self.wfile.write(data)
 
 
+class Server(ThreadingHTTPServer):
+    # Python's servers set SO_REUSEADDR, which on Windows lets a second copy
+    # bind the same port without any error - two servers then share requests,
+    # one possibly running old code. Claim the port exclusively instead, so a
+    # second copy fails loudly.
+    allow_reuse_address = os.name != "nt"
+
+    def server_bind(self):
+        if os.name == "nt" and hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
 def load_features(router):
     for name in FEATURES:
         if not os.path.exists(os.path.join(ROOT, name, "api.py")):
@@ -143,7 +157,13 @@ def main():
 
     port = int(os.environ.get("PORT") or 8000)
     # Localhost only: this is a development server.
-    httpd = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    try:
+        httpd = Server(("127.0.0.1", port), Handler)
+    except OSError:
+        print()
+        print("  Port %d is already in use - the site is probably already running." % port)
+        print("  Open http://localhost:%d/ or close the other server window first." % port)
+        sys.exit(1)
     print("  open http://localhost:%d/" % port)
     try:
         httpd.serve_forever()

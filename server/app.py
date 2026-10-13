@@ -95,7 +95,7 @@ class Handler(SimpleHTTPRequestHandler):
 
         try:
             body = self.read_body() if method == "POST" else None
-            result = handler(Request(method, path, query, body))
+            result = handler(Request(method, path, query, body, client=self.client_ip()))
             status = 200
         except ApiError as e:
             status, result = e.status, {"error": e.message}
@@ -103,6 +103,21 @@ class Handler(SimpleHTTPRequestHandler):
             traceback.print_exc()
             status, result = 500, {"error": "Internal server error - see the server log."}
         self.send_json(status, result)
+
+    def client_ip(self):
+        """The visitor's address. Behind a hosting provider's proxy every
+        request arrives from the proxy, so set TRUST_PROXY=1 there to use the
+        address the proxy reports instead. Leave it off otherwise: anyone can
+        send an X-Forwarded-For header, and trusting it lets a visitor pose as
+        someone else to dodge per-visitor limits."""
+        if os.environ.get("TRUST_PROXY") == "1":
+            forwarded = self.headers.get("X-Forwarded-For", "")
+            # The proxy appends the address it saw; earlier entries come from
+            # the client and can't be trusted.
+            hops = [h.strip() for h in forwarded.split(",") if h.strip()]
+            if hops:
+                return hops[-1]
+        return self.client_address[0]
 
     def read_body(self):
         length = int(self.headers.get("Content-Length") or 0)

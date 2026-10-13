@@ -26,11 +26,12 @@ class ApiError(Exception):
 
 
 class Request:
-    def __init__(self, method, path, query, body):
+    def __init__(self, method, path, query, body, client=None):
         self.method = method
         self.path = path
         self.query = query    # {name: last value}, all strings
         self.body = body      # parsed JSON for POST, else None
+        self.client = client  # the visitor's IP address, for rate limiting
 
     def number(self, name, default=None, low=None, high=None):
         """A numeric query parameter, validated. Missing -> default."""

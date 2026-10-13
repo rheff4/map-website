@@ -1,6 +1,7 @@
 """OpenStreetMap parsing, hours and time zone - no network."""
 
 import unittest
+import unittest.mock
 from datetime import datetime, timedelta, timezone
 
 from restaurants import hours, matching, scoring
@@ -34,10 +35,6 @@ class ParseTest(unittest.TestCase):
 
     def test_without_a_website_links_to_the_osm_object(self):
         self.assertEqual(osm.parse(element(name="X"))["url"], "https://www.openstreetmap.org/node/42")
-
-    def test_id_clause_groups_by_type(self):
-        self.assertEqual(osm._id_clause(["node/2", "way/9", "node/1", "bogus"]),
-                         "node(id:1,2);way(id:9);")
 
 
 class OsmHoursTest(unittest.TestCase):
@@ -102,3 +99,27 @@ class OsmMatchingTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class SnapshotSearchTest(unittest.TestCase):
+    """Searches are answered from the cached city-wide snapshot."""
+
+    def setUp(self):
+        places = [
+            dict(osm.parse(element(name="Near Restaurant", amenity="restaurant")), id="node/1"),
+            dict(osm.parse(element(name="Near Cafe", amenity="cafe")), id="node/2"),
+            dict(osm.parse(element(name="Far Restaurant", amenity="restaurant")), id="node/3",
+                 lat=42.40, lon=-71.0540),
+        ]
+        patcher = unittest.mock.patch.object(osm, "city_snapshot", return_value=places)
+        patcher.start()
+        self.addCleanup(patcher.stop)
+
+    def names(self, **kw):
+        return sorted(p["name"] for p in osm.search(42.3601, -71.0540, 1000, {"key": "x"}, **kw))
+
+    def test_only_restaurants_within_reach(self):
+        self.assertEqual(self.names(), ["Near Restaurant"])
+
+    def test_recognised_places_count_whatever_their_tag(self):
+        self.assertEqual(self.names(extra_ids=["node/2"]), ["Near Cafe", "Near Restaurant"])

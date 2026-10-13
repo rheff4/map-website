@@ -14,12 +14,12 @@ Overpass mirrors. Data (c) OpenStreetMap contributors, ODbL.
 """
 
 import json
+import threading
 import urllib.error
 import urllib.parse
 import urllib.request
 
-from restaurants import cuisines, hours
-from restaurants.sources import cache_ttl_seconds
+from restaurants import cuisines, hours, matching
 from server import cache
 from server.fetch import USER_AGENT, UpstreamError
 
@@ -88,6 +88,7 @@ def parse(element):
         "hours": hours.parse_osm(tags.get("opening_hours")),
         "utc_offset_minutes": None,      # filled in from the city config
         "brand": tags.get("brand"),
+        "amenity": tags.get("amenity"),
     }
 
 
@@ -95,43 +96,85 @@ def _parse_all(elements):
     return [listing for listing in (parse(e) for e in elements) if listing]
 
 
-def _id_clause(osm_ids):
-    """'node/1', 'way/2' -> 'node(id:1);way(id:2);'"""
-    by_type = {}
-    for osm_id in osm_ids:
-        kind, _, num = osm_id.partition("/")
-        if kind in ("node", "way", "relation") and num.isdigit():
-            by_type.setdefault(kind, []).append(num)
-    return "".join("%s(id:%s);" % (k, ",".join(sorted(v))) for k, v in sorted(by_type.items()))
+# ---------------------------------------------------------------------------
+# City-wide snapshot
+#
+# Searching Overpass per request made every search depend on a volunteer
+# server that is often overloaded. Instead we keep one snapshot of every
+# named food place in the city (one request, ~3,000 places, a few MB) and
+# answer searches from it locally: instant, and still working while
+# Overpass is down. A snapshot older than a day is still served, and a fresh
+# one is fetched in the background.
+# ---------------------------------------------------------------------------
+
+SNAPSHOT_FRESH_S = 24 * 3600
+SNAPSHOT_MAX_AGE_S = 30 * 24 * 3600     # beyond this, refuse to serve it
+
+_refreshing = set()
+_refresh_lock = threading.Lock()
 
 
-def search(lat, lon, radius_m, extra_ids=()):
-    """Restaurants around a point, plus any extra OSM objects by id (the
-    recognised places, which may be tagged cafe or fast_food)."""
-    lat, lon = round(lat, 3), round(lon, 3)
-    radius = int(radius_m) + 150         # the rounded centre can be ~70 m off
-    ids = sorted(set(extra_ids))
-    query = ("[out:json][timeout:25];"
-             "(nwr[\"amenity\"=\"restaurant\"](around:%d,%s,%s);%s);"
-             "out center tags;" % (radius, lat, lon, _id_clause(ids)))
+def _snapshot_query(city):
+    (west, south), (east, north) = city["bounds"]
+    return ("[out:json][timeout:120];"
+            "nwr[\"amenity\"~\"^(%s)$\"][\"name\"](%s,%s,%s,%s);"
+            "out center tags;" % ("|".join(FOOD_AMENITIES), south, west, north, east))
 
-    raw = cache.cached("osm-search",
-                       {"v": CACHE_VERSION, "lat": lat, "lon": lon, "r": int(radius_m), "ids": ids},
-                       cache_ttl_seconds(), lambda: overpass(query).get("elements", []))
-    return _parse_all(raw)
+
+def _snapshot_key(city):
+    return {"v": CACHE_VERSION, "city": city["key"], "bounds": city["bounds"]}
+
+
+def _fetch_snapshot(city):
+    elements = overpass(_snapshot_query(city), timeout=150).get("elements", [])
+    cache.put("osm-food-bbox", _snapshot_key(city), elements)
+    return elements
+
+
+def _refresh_in_background(city):
+    with _refresh_lock:
+        if city["key"] in _refreshing:
+            return
+        _refreshing.add(city["key"])
+
+    def run():
+        try:
+            _fetch_snapshot(city)
+        except UpstreamError:
+            pass                              # keep serving the older snapshot
+        finally:
+            with _refresh_lock:
+                _refreshing.discard(city["key"])
+
+    threading.Thread(target=run, daemon=True).start()
+
+
+def city_snapshot(city):
+    """Every named food place in the city (listings). Serves a stale copy and
+    refreshes it in the background; fetches synchronously only the first time."""
+    key = _snapshot_key(city)
+    if cache.get("osm-food-bbox", key, SNAPSHOT_FRESH_S) is not None:
+        return _parse_all(cache.get("osm-food-bbox", key, SNAPSHOT_FRESH_S))
+    stale = cache.get("osm-food-bbox", key, SNAPSHOT_MAX_AGE_S)
+    if stale is not None:
+        _refresh_in_background(city)
+        return _parse_all(stale)
+    return _parse_all(_fetch_snapshot(city))
 
 
 def food_places_in_bounds(city):
-    """Every named food place in the city's bounds, in ONE Overpass request -
-    for snapping curated entries to the restaurant actually mapped there.
-    Cached for a day, so re-running the enrichment tool is cheap."""
-    (west, south), (east, north) = city["bounds"]
-    query = ("[out:json][timeout:120];"
-             "nwr[\"amenity\"~\"^(%s)$\"][\"name\"](%s,%s,%s,%s);"
-             "out center tags;" % ("|".join(FOOD_AMENITIES), south, west, north, east))
-    raw = cache.cached("osm-food-bbox", {"v": CACHE_VERSION, "city": city["key"], "bounds": city["bounds"]},
-                       24 * 3600, lambda: overpass(query, timeout=150).get("elements", []))
-    return _parse_all(raw)
+    """Every named food place in the city - for the enrichment tool."""
+    return city_snapshot(city)
+
+
+def search(lat, lon, radius_m, city, extra_ids=()):
+    """Restaurants around a point, plus the recognised places by OSM id
+    (those may be tagged cafe, fast_food or bar)."""
+    extra = set(extra_ids)
+    reach = radius_m + 150
+    return [p for p in city_snapshot(city)
+            if (p["amenity"] == "restaurant" or p["id"] in extra)
+            and matching.distance_m(lat, lon, p["lat"], p["lon"]) <= reach]
 
 
 def geocode(text, city):

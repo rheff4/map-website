@@ -54,7 +54,7 @@ def _fetch_osm(status, city, entries, lat, lon, radius_m, now):
     extra_ids = [e["osm_id"] for e in entries if e.get("osm_id") and (
         e["lat"] is None or matching.distance_m(lat, lon, e["lat"], e["lon"]) <= radius_m + 200)]
     try:
-        listings = osm.search(lat, lon, radius_m, extra_ids)
+        listings = osm.search(lat, lon, radius_m, city, extra_ids)
     except UpstreamError as e:
         status["osm"] = {"state": "error", "message": str(e)}
         return []

@@ -405,4 +405,83 @@
   sidebar.onShow('routes', function () {
     if (state.route) view.fitBounds(boundsOf(state.route.geometry.coordinates), 60);
   });
+
+  // -------------------------------------------------------------- toilets
+
+  // Public toilets, each labelled with its name or, when it has no real one,
+  // its nearest intersection ("Street A / Street B") - built by
+  // routes/tools/build_toilets.py. Labels appear from zoom 13 so the city-wide
+  // view isn't buried in text; MapLibre hides any that would overlap.
+
+  var TOILET_GREEN = '#2f855a';
+  var LABEL_FONT = ['Montserrat Medium', 'Open Sans Bold', 'Noto Sans Regular'];  // the basemap's own
+
+  function esc(text) {
+    return String(text).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  function toiletPopup(p) {
+    var lines = ['<b>' + esc(p.label) + '</b>'];
+    if (p.label_source === 'intersection') {
+      lines.push('Nearest intersection, about ' + p.label_distance_m + ' m away');
+    } else if (p.label_source === 'place') {
+      lines.push('No street corner nearby, so labelled by where it is');
+    }
+    if (p.name && p.name !== p.label) lines.push('Signed as “' + esc(p.name) + '”');
+    if (p.access === 'customers') lines.push('Customers only');
+    if (p.fee === 'yes') lines.push('Fee charged');
+    else if (p.fee === 'no') lines.push('Free');
+    if (p.wheelchair === 'yes') lines.push('Wheelchair accessible');
+    if (p.opening_hours) lines.push('Hours: ' + esc(p.opening_hours));
+    return lines.join('<br>');
+  }
+
+  fetch('/api/routes/toilets').then(function (r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  }).then(function (toilets) {
+    view.addLayer({
+      id: 'routes:toilets',
+      type: 'circle',
+      data: toilets,
+      paint: {
+        'circle-radius': 6,
+        'circle-color': TOILET_GREEN,
+        'circle-stroke-width': 1.5,
+        'circle-stroke-color': '#fff'
+      },
+      legend: { label: 'Public toilets', color: TOILET_GREEN },
+      popup: toiletPopup
+    });
+    view.addLayer({
+      id: 'routes:toilet-labels',
+      type: 'symbol',
+      data: toilets,
+      layout: {
+        'text-field': ['get', 'label'],
+        'text-font': LABEL_FONT,
+        'text-size': 11,
+        'text-anchor': 'left',
+        'text-offset': [0.9, 0],
+        'text-max-width': 11,
+        'text-optional': true
+      },
+      paint: {
+        'text-color': '#22543d',
+        'text-halo-color': '#fff',
+        'text-halo-width': 1.5,
+        'text-opacity': ['step', ['zoom'], 0, 13, 1]
+      }
+    });
+    // The real layer replaces the demo snapshot in shared/index.html, which
+    // has no labels. That block is temporary; once it's gone this is a no-op.
+    if (view.listLayers().indexOf('routes:sample-bathrooms') !== -1) {
+      view.removeLayer('routes:sample-bathrooms');
+    }
+  }).catch(function (err) {
+    // Leave the demo toilets in place if the real ones can't load.
+    if (global.console) console.warn('[routes] toilets unavailable:', err.message);
+  });
 })(window);

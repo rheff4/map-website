@@ -2,6 +2,7 @@
 Route endpoints, loaded by server/app.py.
 
     GET /api/routes/generate?lon=&lat=&km=&shape=loop|out-and-back&seed=
+    GET /api/routes/toilets                 labelled public toilets, GeoJSON
 
 Routes come from OpenRouteService's foot-walking profile, called from here so
 the API key never reaches the browser. Climb comes from the USGS elevation
@@ -11,7 +12,9 @@ Without ORS_API_KEY in .env this answers 501, and the page falls back to its
 straight-line preview, so the tab still works on a machine with no key.
 """
 
+import json
 import math
+import os
 from concurrent.futures import ThreadPoolExecutor
 
 from routes import elevation, limits
@@ -50,8 +53,35 @@ BUDGET = limits.OrsBudget.from_env()
 VISITORS = limits.VisitorLimit()
 
 
+TOILETS_DIR = os.path.join(elevation.ROOT, "data", "toilets")
+_toilets = {}   # city -> (file mtime, data)
+
+
 def register(router):
     router.get("/api/routes/generate", generate)
+    router.get("/api/routes/toilets", toilets)
+
+
+# ------------------------------------------------------------------ toilets
+
+def toilets(request):
+    """The city's public toilets, each with a label. Built ahead of time by
+    routes/tools/build_toilets.py; re-read whenever that file changes."""
+    try:
+        city = cities.get(request.query.get("city"))
+    except KeyError as e:
+        raise ApiError(400, e.args[0])
+    path = os.path.join(TOILETS_DIR, "%s.json" % city["key"])
+    if not os.path.exists(path):
+        raise ApiError(404, "No toilet data for %s yet. Build it with: "
+                            "python -m routes.tools.build_toilets --city %s"
+                       % (city["name"], city["key"]))
+    mtime = os.path.getmtime(path)
+    cached = _toilets.get(city["key"])
+    if not cached or cached[0] != mtime:
+        with open(path, encoding="utf-8") as f:
+            cached = _toilets[city["key"]] = (mtime, json.load(f))
+    return cached[1]
 
 
 # ------------------------------------------------------------------ handler

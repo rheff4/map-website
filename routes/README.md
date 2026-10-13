@@ -14,6 +14,8 @@ Owner: Rob · Branch: `routes`
 | `limits.py` | Rate limits that protect the shared ORS quota |
 | `elevation.py` | Heights and climb for a route, from the elevation grid |
 | `tools/build_elevation_grid.py` | Builds a city's grid from USGS data. Run once per city |
+| `tools/build_toilets.py` | Builds the labelled public-toilet layer from OpenStreetMap |
+| `../data/toilets/<city>.json` | The generated toilets, served by `GET /api/routes/toilets` |
 | `tests/` | Unit tests, no network: `python -m unittest discover -s routes/tests -t .` |
 | `../data/elevation/<city>.json` | The generated grid. Do not edit by hand |
 
@@ -79,6 +81,37 @@ Don't set it without a proxy - anyone could forge their address.
 **Attribution:** HeiGIT's terms require "© openrouteservice by HeiGIT | Data
 from OpenStreetMap" wherever results are shown. The route layer declares it,
 and it appears in the map's credit line.
+
+## Public toilets
+
+Every public toilet within the city's bounds, from OpenStreetMap
+(`amenity=toilets`), each with a label on the map from zoom 13 in. Built by
+`python -m routes.tools.build_toilets` into `data/toilets/<city>.json`; the
+tab replaces the unlabelled demo toilets from `shared/index.html` once it
+loads.
+
+**Labels**, in order of preference:
+
+1. **Its own name**, when it has a real one ("Government Center Toilets").
+   Names that only say what it is or brand it - "City Toilet", "Portland
+   Loo", "Restroom" - don't count: several toilets share each one, so they
+   can't be told apart on a map. The name still shows in the popup.
+2. **The nearest intersection**, as "Street A / Street B", bigger road first.
+   Only real streets count - not footpaths, not motorways or trunk roads.
+3. **The place it's in**, when the nearest intersection is over 300 m away:
+   out on Castle Island it's ~1 km off, from Spectacle Island 3 km across the
+   harbour. Uses the most specific named building, park, island or airport
+   terminal.
+
+**Public** means not tagged `access=private` or `access=no`. Customers-only
+toilets are kept and say so in the popup, which also shows fee, wheelchair
+access and opening hours where OSM has them.
+
+Built 13 October 2026: 165 toilets - 2 by name, 129 by intersection, 34 by
+place. **53 of them (32%) are inside Logan Airport**, 26 labelled "Terminal B".
+
+Rebuild to refresh; add `--cached` to re-label from the last download without
+querying Overpass again, which is a free shared service and often slow.
 
 ## Elevation
 

@@ -19,11 +19,17 @@ where the two disagree, the PRD is current.
 
 ## Running it
 
+On Windows, double-click **`start.bat`**: it starts the server and opens the
+site in your browser. Close its window to stop the server.
+
+Or from a terminal:
+
 ```
 python server/app.py
 ```
 
-Then open http://localhost:8000/. Python 3.9+, standard library only - nothing
+Then open http://localhost:8000/ - not the HTML file itself, which cannot load
+its scripts or data without the server. Python 3.9+, standard library only - nothing
 to install. The server serves the site and each feature's API, and reads API
 keys from `.env` (copy `.env.example`; `.env` is gitignored), so keys never
 reach the browser. See `server/router.py` for how a feature adds endpoints.

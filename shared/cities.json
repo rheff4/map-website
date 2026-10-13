@@ -1,5 +1,5 @@
 {
-  "_readme": "One entry per launch city. Adding a city = add an entry here + its data files. Coordinates are [longitude, latitude]; bounds are [[west, south], [east, north]].",
+  "_readme": "One entry per launch city. Adding a city = add an entry here + its data files. Coordinates are [longitude, latitude]; bounds are [[west, south], [east, north]]. timezone is the IANA name; utc_offset_minutes (standard time) and dst ('us', 'eu' or none) are the fallback when the system has no time-zone database, as on Windows.",
   "default": "boston",
   "cities": {
     "boston": {
@@ -8,7 +8,10 @@
       "center_label": "Boston Common",
       "zoom": 14,
       "bounds": [[-71.1912, 42.2279], [-70.9860, 42.4008]],
-      "recognition": "data/recognition/boston.json"
+      "recognition": "data/recognition/boston.json",
+      "timezone": "America/New_York",
+      "utc_offset_minutes": -300,
+      "dst": "us"
     }
   }
 }

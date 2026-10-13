@@ -27,7 +27,8 @@ view.addLayer({
   paint: { 'line-color': '#2b6cb0', 'line-width': 5 },
   legend: { label: 'Running route', color: '#2b6cb0' },
   popup: (props) => `<b>${props.name}</b>`,  // optional
-  onClick: (props, feature) => { ... }      // optional
+  onClick: (props, feature) => { ... },     // optional
+  attribution: '© Some Provider'            // optional, HTML; shown on the map
 });
 ```
 
@@ -55,6 +56,12 @@ results they will fight over the view.
 **Draw order is decided once,** by layer type: fills (5), lines (10), circles
 (20), symbols (30). Pass `z` to override. Order does not depend on which branch
 registers first.
+
+**Credit your data with `attribution`.** Most data sources require a visible
+credit line once their results are shown to users - openrouteservice, Google
+Places, Yelp. Put it on the layer that shows that data, and the map's
+attribution control displays it alongside the basemap's. Write the credit
+exactly as the provider's terms specify.
 
 **Don't edit the map set-up in `index.html`.** Add your script line; leave the
 rest.

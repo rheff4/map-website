@@ -152,7 +152,12 @@
         registry[layer.id] = layer;
 
         whenReady(function () {
-          map.addSource(layer.id, { type: 'geojson', data: layer.data });
+          // A layer's data source may require a credit line - routes from
+          // openrouteservice, places from Google, and so on. MapLibre shows
+          // source attributions in the map's attribution control.
+          var source = { type: 'geojson', data: layer.data };
+          if (layer.attribution) source.attribution = layer.attribution;
+          map.addSource(layer.id, source);
           map.addLayer({
             id: layer.id,
             type: layer.type,

@@ -14,7 +14,7 @@ python server/app.py
 Open http://localhost:8000/. The Restaurants tab is open by default.
 
 Without API keys it runs in **demo mode**: fictional restaurants and
-placeholder awards, served from `restaurants/fixtures/`, with a yellow banner
+placeholder awards, all from `restaurants/fixtures/`, with a yellow banner
 saying so. That is enough to work on the UI and the ranking without spending
 anything.
 
@@ -87,9 +87,19 @@ Michelin, Eater, TheFork, Zomato, city guides and creators have no usable
 public API, so recognition is a hand-curated file per city:
 `data/recognition/boston.json`.
 
-**Right now it contains only placeholders** for fictional restaurants (used by
-demo mode, ignored with real keys). With real keys and no real entries,
-nothing counts as recognised and the page tells you so.
+**What's in it now** (checked 2026-10-13, each entry linking to its source):
+
+- **MICHELIN Guide Boston**: all 24 restaurants inside the city bounds - 1 star
+  (311 Omakase), 6 Bib Gourmand, 17 recommended. Thistle & Leek (Newton
+  Centre) and Nightshade Noodle Bar (Lynn) are outside the bounds and left out.
+- **Eater 38** (Oct 8 2026 edition): 36 of the 38 - Rubato (South Walpole) and
+  Thaiger Den (Malden) are outside the bounds.
+
+Entries need a place id and coordinates before they can match anything; run
+the enrichment tool (step 3) once your Google key is in `.env`.
+
+Demo mode does not use this file: its fictional entries live in
+`restaurants/fixtures/recognition_demo.json`.
 
 1. Open the source - e.g. the current Eater 38 Boston article - and for each
    restaurant on it add an entry:
@@ -134,7 +144,7 @@ nothing counts as recognised and the page tells you so.
    Check every line marked `CHECK` (Google's name differs from yours) and
    fix any `?` lines by hand by adding `lat` and `lon`.
 
-4. Delete the placeholder entries once you have real ones.
+4. Restart the server (close `start.bat`'s window and open it again).
 
 Rules that keep the success test honest:
 - **Copy, don't guess.** Only add what the source actually published, and

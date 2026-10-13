@@ -1,130 +1,613 @@
 {
   "_readme": [
     "Curated recognition for Boston restaurants - sources with no public API.",
-    "One entry = one source vouching for one restaurant. A restaurant on three lists has three entries.",
-    "Fields: name, address, source (an id from SOURCES in restaurants/scoring.py), source_url (link to the list or article), note (optional, e.g. the year).",
+    "One entry = one source vouching for one restaurant. A restaurant on two lists has two entries.",
+    "Fields: name, address, source (an id from SOURCES in restaurants/scoring.py), source_url, note (edition / date checked).",
     "place_id / lat / lon are filled in by: python -m restaurants.tools.enrich_recognition",
-    "Every entry below is a PLACEHOLDER: a fictional restaurant used by demo mode. Placeholders are ignored when real API keys are in use. Replace them with real entries copied from the source - never guess an award.",
-    "See restaurants/README.md, 'Adding recognition entries'."
+    "Every entry was copied from the source page itself; never add an award from memory. See restaurants/README.md, 'Adding recognition entries'.",
+    "Lists change: Eater 38 updates quarterly, Michelin yearly. Re-check and update the note when you do."
   ],
   "city": "boston",
   "entries": [
     {
-      "name": "Lantern & Ladle",
-      "address": "1 Mock Wharf, Boston, MA (fictional)",
-      "source": "eater_38",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3601, "lon": -71.0540
-    },
-    {
-      "name": "Lantern & Ladle",
-      "address": "1 Mock Wharf, Boston, MA (fictional)",
-      "source": "michelin_bib_gourmand",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3601, "lon": -71.0540
-    },
-    {
-      "name": "Nonna Pina's Kitchen",
-      "address": "2 Mock St, Boston, MA (fictional)",
-      "source": "eater_38",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3637, "lon": -71.0545
-    },
-    {
-      "name": "Nonna Pina's Kitchen",
-      "address": "2 Mock St, Boston, MA (fictional)",
-      "source": "city_guide",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3637, "lon": -71.0545
-    },
-    {
-      "name": "The Gilded Spoon",
-      "address": "12 Mock Ave, Boston, MA (fictional)",
+      "name": "311 Omakase",
+      "address": "605 Tremont St., Boston, MA 02118",
       "source": "michelin_star",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3545, "lon": -71.0690
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/311-omakase",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Saffron Alley",
-      "address": "5 Mock St, Boston, MA (fictional)",
-      "source": "influencer",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real list.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3510, "lon": -71.0640
+      "name": "Fox & The Knife",
+      "address": "28 W. Broadway, Boston, MA 02127",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/fox-the-knife",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Saffron Alley",
-      "address": "5 Mock St, Boston, MA (fictional)",
-      "source": "influencer",
-      "source_url": "https://example.com/placeholder-2",
-      "note": "PLACEHOLDER - a second, separate creator list.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3510, "lon": -71.0640
+      "name": "Bar Volpe",
+      "address": "170 W. Broadway, Boston, MA 02127",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/bar-volpe",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Casa Verde Taqueria",
-      "address": "11 Mock St, Boston, MA (fictional)",
-      "source": "eater_heatmap",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3470, "lon": -71.0640
+      "name": "Sumiao Hunan Kitchen",
+      "address": "270 3rd St, Cambridge, MA 02142",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/sumiao-hunan-kitchen",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Fenway Pho House",
-      "address": "14 Mock St, Boston, MA (fictional)",
-      "source": "zomato",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3455, "lon": -71.0702
+      "name": "Pagu",
+      "address": "310 Massachusetts Ave., Cambridge, MA 02139",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/pagu",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Fenway Pho House",
-      "address": "14 Mock St, Boston, MA (fictional)",
-      "source": "influencer",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real list.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3455, "lon": -71.0702
+      "name": "Jahunger",
+      "address": "272 Brookline St, Cambridge, MA 02139",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/jahunger",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Copper Kettle Chowder House",
-      "address": "3 Mock Wharf, Boston, MA (fictional)",
-      "source": "city_guide",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real guide.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3588, "lon": -71.0520
+      "name": "Mahaniyom",
+      "address": "236 Washington St, Brookline, MA 02445",
+      "source": "michelin_bib_gourmand",
+      "source_url": "https://guide.michelin.com/en/massachusetts/brookline_2914829/restaurant/mahaniyom",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     },
     {
-      "name": "Rue Blanche Bistro",
-      "address": "4 Mock St, Boston, MA (fictional)",
-      "source": "thefork",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - fictional restaurant for demo mode, not a real award.",
-      "placeholder": true,
-      "place_id": null, "lat": 42.3580, "lon": -71.0700
-    },
-    {
-      "name": "Quiet Harbor Kitchen",
-      "address": "16 Mock St, Boston, MA (fictional)",
+      "name": "Somaek",
+      "address": "11 Temple Pl., Boston, MA 02111",
       "source": "michelin_selected",
-      "source_url": "https://example.com/placeholder",
-      "note": "PLACEHOLDER - demo of a recognised place that the search APIs did not return.",
-      "placeholder": true,
-      "place_id": "mock-g16", "lat": 42.3655, "lon": -71.0560
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/somaek",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Neptune Oyster",
+      "address": "63 Salem St, Boston, MA 02113",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/neptune-oyster",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Carmelina's",
+      "address": "307 Hanover St., Boston, MA 02113",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/carmelina-s",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Zhi Wei Cafe",
+      "address": "104 South St., Boston, MA 02111",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/zhi-wei-cafe",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Wa Shin",
+      "address": "222 Stuart St., Boston, MA 02116",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/wa-shin",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Mooncusser",
+      "address": "304 Stuart St, Boston, MA 02116",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/mooncusser",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Woods Hill Pier 4",
+      "address": "300 Pier 4 Blvd., Boston, MA 02210",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/woods-hill-pier-4",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "La Padrona",
+      "address": "38 Trinity Pl, Boston, MA 02116",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/la-padrona",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Lenox Sophia",
+      "address": "87 A St., Boston, MA 02127",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/lenox-sophia",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Select Oyster Bar",
+      "address": "50 Gloucester St., Boston, MA 02115",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/select-oyster-bar",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Asta",
+      "address": "47 Massachusetts Ave., Boston, MA 02115",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/asta",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Toro",
+      "address": "1704 Washington St., Boston, MA 02118",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/boston_2914838/restaurant/toro",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Oleana",
+      "address": "134 Hampshire St., Cambridge, MA 02139",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/oleana",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Urban Hearth",
+      "address": "2263 Massachusetts Ave, Cambridge, MA 02140",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/urban-hearth",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Pammy's",
+      "address": "928 Massachusetts Ave., Cambridge, MA 02139",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/pammy-s",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Moëca",
+      "address": "1 Shepard St, Cambridge, MA 02138",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/moeca",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Giulia",
+      "address": "1682 Massachusetts Ave., Cambridge, MA 02138",
+      "source": "michelin_selected",
+      "source_url": "https://guide.michelin.com/en/massachusetts/cambridge_2914793/restaurant/giulia-1218584",
+      "note": "MICHELIN Guide Boston (2025 selection), checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Spoke Wine Bar",
+      "address": "89 Holland St, Somerville, MA 02144",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Urban Hearth",
+      "address": "2263 Massachusetts Ave, Cambridge, MA 02140",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Gustazo Cuban Kitchen & Bar",
+      "address": "2067 Massachusetts Ave, Cambridge, MA 02140",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Sarma",
+      "address": "249 Pearl St, Somerville, MA 02145",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "La Royal",
+      "address": "221 Concord Ave, Cambridge, MA 02138",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Moëca",
+      "address": "1 Shepard St, Cambridge, MA 02138",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Taquería Jalisco",
+      "address": "291 Bennington St, Boston, MA 02128",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Lehrhaus",
+      "address": "425 Washington St, Somerville, MA 02143",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Moona",
+      "address": "243 Hampshire St, Cambridge, MA 02139",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Sumiao Hunan Kitchen",
+      "address": "270 3rd St, Cambridge, MA 02142",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Si Cara",
+      "address": "425 Massachusetts Ave, Cambridge, MA 02139",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Brookline Lunch",
+      "address": "9 Brookline St, Cambridge, MA 02139",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Fallow Kin",
+      "address": "853 Main St, Cambridge, MA 02139",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Neptune Oyster",
+      "address": "63 Salem St, Boston, MA 02113",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Jahunger",
+      "address": "272 Brookline St, Cambridge, MA 02139",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Zurito",
+      "address": "26 Charles St, Boston, MA 02114",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Aatma Curry House",
+      "address": "190 North Beacon St, Boston, MA 02135",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Taiwan Cafe",
+      "address": "34 Oxford St, Boston, MA 02111",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Mooncusser",
+      "address": "304 Stuart St, Boston, MA 02116",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Grill 23 & Bar",
+      "address": "161 Berkeley St, Boston, MA 02116",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Bab Al-Yemen Boston",
+      "address": "468 Commonwealth Ave, Boston, MA 02215",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "La Padrona",
+      "address": "38 Trinity Pl, Boston, MA 02116",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Kaia",
+      "address": "380 Harrison Ave, Boston, MA 02118",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Ganko Ittetsu Ramen",
+      "address": "318 Harvard St, Brookline, MA 02446",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Three 1 One",
+      "address": "605 Tremont St, Boston, MA 02118",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "SRV",
+      "address": "569 Columbus Ave, Boston, MA 02118",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Mahaniyom",
+      "address": "236 Washington St, Brookline, MA 02445",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Suya Joint",
+      "address": "185 Dudley St, Boston, MA",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Blue Nile",
+      "address": "389 Centre St, Boston, MA 02130",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Singh's Roti Shop",
+      "address": "554 Columbia Rd, Dorchester, MA 02125",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Merengue Restaurant",
+      "address": "156 Blue Hill Ave, Boston, MA 02125",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Comfort Kitchen",
+      "address": "611 Columbia Rd, Dorchester, MA 02125",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Tonino",
+      "address": "669 Centre St, Jamaica Plain, MA 02130",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Brassica Kitchen & Cafe",
+      "address": "3710 Washington St, Jamaica Plain, MA 02130",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Himalayan Bistro",
+      "address": "1735 Centre St, West Roxbury, MA 02132",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
+    },
+    {
+      "name": "Lê Madeline",
+      "address": "409 Hancock St, Quincy, MA 02171",
+      "source": "eater_38",
+      "source_url": "https://boston.eater.com/maps/best-restaurants-boston-38",
+      "note": "Eater 38 - 'The 38 Best Restaurants Around Boston', Oct 8 2026 edition, checked 2026-10-13",
+      "place_id": null,
+      "lat": null,
+      "lon": null
     }
   ]
 }

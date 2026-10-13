@@ -121,7 +121,7 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
                            lambda key, mock: yelp.search(lat, lon, radius_m, key, mock))
     places = matching.merge_listings(google_listings, yelp_listings)
 
-    rec = recognition.load(city, include_placeholders=m["demo"])
+    rec = recognition.load(city, demo=m["demo"])
     warnings.extend(rec["warnings"])
     unmatched = matching.attach_recognition(places, rec["entries"])
     places.extend(_recognised_extras(unmatched, lat, lon, radius_m, m, warnings))

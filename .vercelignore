@@ -1,0 +1,12 @@
+# Never upload secrets. Set ORS_API_KEY in the Vercel dashboard instead.
+.env
+.env.*
+!.env.example
+
+# Local only.
+.cache/
+.claude/
+spikes/
+**/__pycache__/
+*.pdf
+start.bat

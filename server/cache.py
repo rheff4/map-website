@@ -16,26 +16,40 @@ import threading
 import time
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CACHE_DIR = os.path.join(ROOT, ".cache")
+# Hosts with a read-only disk (Vercel) set CACHE_DIR to somewhere under /tmp.
+CACHE_DIR = os.environ.get("CACHE_DIR") or os.path.join(ROOT, ".cache")
+
+# Read-only entries shipped with the site (python -m server.seed_cache), used
+# whenever CACHE_DIR has nothing, whatever their age. A fresh serverless
+# instance starts with an empty /tmp; without these its first restaurant
+# search would wait minutes on Overpass, past the host's time limit.
+SEED_DIR = os.path.join(ROOT, "data", "cache-seed")
 
 _write_lock = threading.Lock()
 
 
-def _path(namespace, key):
+def _path(namespace, key, base=None):
     digest = hashlib.sha256(
         json.dumps(key, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()[:32]
-    return os.path.join(CACHE_DIR, namespace, digest + ".json")
+    return os.path.join(base or CACHE_DIR, namespace, digest + ".json")
+
+
+def _read(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return None
 
 
 def get(namespace, key, ttl_seconds):
-    """The cached value, or None if missing or older than ttl_seconds."""
-    path = _path(namespace, key)
-    try:
-        with open(path, encoding="utf-8") as f:
-            entry = json.load(f)
-    except (OSError, ValueError):
-        return None
+    """The cached value, or None if missing or older than ttl_seconds.
+    Falls back to the shipped seed (see SEED_DIR) when nothing is cached."""
+    entry = _read(_path(namespace, key))
+    if entry is None:
+        seed = _read(_path(namespace, key, SEED_DIR))
+        return seed.get("value") if seed else None
     if time.time() - entry.get("saved_at", 0) > ttl_seconds:
         return None
     return entry.get("value")

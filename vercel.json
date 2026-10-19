@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    { "source": "/", "destination": "/shared/index.html", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/index" }
+  ],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "includeFiles": "{server,routes,restaurants,data,shared}/**"
+    }
+  }
+}

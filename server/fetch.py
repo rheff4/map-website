@@ -17,9 +17,12 @@ class UpstreamError(Exception):
 
 
 def _error_detail(body):
-    # Google and Yelp both return {"error": {"message"|"description": ...}}.
+    # Google and Yelp both return {"error": {"message"|"description": ...}};
+    # OpenRouteService sometimes just {"error": "Quota exceeded"}.
     try:
         err = json.loads(body).get("error", {})
+        if isinstance(err, str):
+            return err
         return err.get("message") or err.get("description") or ""
     except (ValueError, AttributeError):
         return ""

@@ -280,6 +280,10 @@ def _ors(key, body):
 
 def _explain(err):
     text = str(err)
+    if err.status == 403 and "quota" in text.lower():
+        # ORS's daily allowance is spent - a 403, not a 429, and not a bad key.
+        return ApiError(503, "This site has used today's route allowance from OpenRouteService. "
+                             "Try again tomorrow.")
     if err.status in (401, 403):
         return ApiError(502, "OpenRouteService rejected the API key. Check ORS_API_KEY in .env.")
     if err.status == 429:

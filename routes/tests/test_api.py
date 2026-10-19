@@ -74,6 +74,8 @@ class OrsRequest(unittest.TestCase):
     def test_errors_become_actionable_messages(self):
         cases = [
             (api.UpstreamError("x", status=403), 502, "API key"),
+            (api.UpstreamError("api.openrouteservice.org returned HTTP 403: Quota exceeded",
+                               status=403), 503, "today's route allowance"),
             (api.UpstreamError("x", status=429), 503, "quota"),
             (api.UpstreamError("Could not find routable point within 350 m", status=404), 422, "walkable"),
         ]

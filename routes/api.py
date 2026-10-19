@@ -31,12 +31,16 @@ ORS_URL = "https://api.openrouteservice.org/v2/directions/foot-walking/geojson"
 
 MIN_KM, MAX_KM, DEFAULT_KM = 1, 42, 5
 
+# How far a route may land from the requested distance, in metres - the same
+# for every distance, so a 20 km run isn't allowed to be 2 km out the way a
+# percentage would. Every "close enough" below is measured against this.
+TOLERANCE_M = 500
+
 # ORS's round trips miss the requested length, by up to ~18% in testing - far
 # more where few streets connect, like the Seaport waterfront. Ask for a few
 # at once with different seeds and keep the closest; if even that is more than
-# LOOP_RETRY_OFF away, ask once more with the length scaled to compensate.
+# TOLERANCE_M away, ask once more with the length scaled to compensate.
 LOOP_CANDIDATES = 3
-LOOP_RETRY_OFF = 0.10
 
 # Hard cap on ORS calls per click, against the free tier's 2,000 a day and 40
 # a minute. 6 calls a click still allows 330+ routes a day.
@@ -46,21 +50,19 @@ MAX_CALLS = 6
 # longer in a city grid. Used to aim an out-and-back's turnaround point.
 DETOUR = 1.3
 
-# An out-and-back re-aims its turnaround until the leg is within this share of
-# half the distance, up to OUT_AND_BACK_AIMS tries, keeping the best leg seen.
-OUT_AND_BACK_TOLERANCE = 0.08
+# An out-and-back re-aims its turnaround until the whole run is within
+# TOLERANCE_M (the leg within half that), up to OUT_AND_BACK_AIMS tries,
+# keeping the best leg seen.
 OUT_AND_BACK_AIMS = 3
 
-# Hilliness only chooses among candidates this close to the requested
-# distance (or within 3 points of the closest, if none are): distance first.
+# Hilliness only chooses among candidates within TOLERANCE_M of the requested
+# distance (or within CLOSEST_SLACK_M of the closest, if none are): distance
+# first.
 HILLS = ("flat", "balanced", "hilly")
-CLOSE_ENOUGH = 0.10
+CLOSEST_SLACK_M = 200
 # Below this spread in climb, the page says routes here are much the same.
 SIMILAR_CLIMB_M = 10
 
-# A run to a destination: asking for up to this much over the direct route
-# just gets the direct route. Beyond it, detours bend out through a waypoint.
-DIRECT_SLACK = 1.05
 RUN_TO_AIMS = 3
 
 # A run to a destination bends out through waypoints along a circular arc
@@ -178,6 +180,7 @@ def generate(request):
     props = {
         "requestedM": length,
         "lengthM": round(actual, 1),
+        "toleranceM": TOLERANCE_M,
         "shape": shape,
         "seed": seed,
         "hills": hills,
@@ -190,8 +193,10 @@ def generate(request):
         "stub": False,
     }
     if shape == "to":
+        # Too far: even the shortest way there runs past the requested
+        # distance by more than the tolerance.
         props.update(destination=dest, directM=round(direct_m, 1),
-                     belowDirect=length < direct_m)
+                     tooFar=direct_m - length > TOLERANCE_M)
     return {
         "type": "Feature",
         "geometry": {"type": "LineString", "coordinates": coords},
@@ -205,10 +210,10 @@ def _choose(candidates, length, hills, grid):
 
     -> ((coords, metres), elevation summary, what was compared)"""
     def off(c):
-        return abs(c[1] - length) / length
+        return abs(c[1] - length)
 
     nearest = min(off(c) for c in candidates)
-    near = [c for c in candidates if off(c) <= max(CLOSE_ENOUGH, nearest + 0.03)]
+    near = [c for c in candidates if off(c) <= max(TOLERANCE_M, nearest + CLOSEST_SLACK_M)]
     measured = [(c, elevation.measure(grid, c[0])) for c in near]
     climbs = [e["ascent"] for _, e in measured]
     choice = {
@@ -317,7 +322,7 @@ def _loop_candidates(key, start, length, seed, explore=False):
     best = min(routes, key=lambda r: abs(r[1] - length))
     calls = len(results)
 
-    off = abs(best[1] - length) / length > LOOP_RETRY_OFF
+    off = abs(best[1] - length) > TOLERANCE_M
     if (off or explore) and calls + LOOP_CANDIDATES <= MAX_CALLS:
         ask = length * min(2.0, max(0.5, length / best[1])) if off else length
         more = _loop_round(key, start, ask, [base + LOOP_CANDIDATES + k for k in range(LOOP_CANDIDATES)])
@@ -409,7 +414,7 @@ def _out_and_back_candidates(key, start, length, seed, explore=False):
                 break                                  # unroutable that way
             if best is None or abs(got - half) < abs(best[1] - half):
                 best = (leg, got)
-            if got <= 0 or abs(got - half) / half <= OUT_AND_BACK_TOLERANCE:
+            if got <= 0 or abs(got - half) <= TOLERANCE_M / 2:
                 good.append(there_and_back(leg, got))
                 if not explore:
                     return good, calls
@@ -434,8 +439,12 @@ def _run_to(key, start, dest, length, seed, explore=False):
 
     The direct route sets a floor: asked for less (or barely more), the
     runner gets the direct route and the page says how long it really is.
-    Longer runs bend out to one side through waypoints along an ellipse
-    around start and destination (RUN_TO_ARC), sized so the straight-line
+    Within TOLERANCE_M of the direct route either way, the direct route is
+    the run. Asked for more than TOLERANCE_M short of it, the runner still
+    gets it, and the page warns that the destination is too far.
+
+    Longer runs bend out to one side through waypoints along a circular arc
+    from start to destination (RUN_TO_ARC), sized so the straight-line
     path through them, scaled by how much longer this pair's streets run than
     the crow flies, is the requested distance; then re-aimed like an
     out-and-back. Both sides are tried when exploring for hills, when one
@@ -444,7 +453,7 @@ def _run_to(key, start, dest, length, seed, explore=False):
     -> ([(coords, metres), ...], calls, direct metres)"""
     direct = _ors(key, {"coordinates": [start, dest]})
     calls = 1
-    if length <= direct[1] * DIRECT_SLACK:
+    if length <= direct[1] + TOLERANCE_M:
         return [direct], calls, direct[1]
 
     straight = max(_haversine(start, dest), 1.0)
@@ -466,7 +475,7 @@ def _run_to(key, start, dest, length, seed, explore=False):
                     raise
                 break                                  # a waypoint in the water: other side
             candidates.append(route)
-            if abs(route[1] - length) / length <= OUT_AND_BACK_TOLERANCE:
+            if abs(route[1] - length) <= TOLERANCE_M:
                 if not explore:
                     return candidates, calls, direct[1]
                 break

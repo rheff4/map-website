@@ -286,7 +286,8 @@
     '.routes-results dt { color: #666; }',
     '.routes-results dd { margin: 0; font-variant-numeric: tabular-nums; }',
     '.routes-note { color: #8a6d3b; background: #fcf4e4; padding: 8px 10px;',
-    '  border-radius: 6px; margin: 12px 0 0; font-size: 13px; }'
+    '  border-radius: 6px; margin: 12px 0 0; font-size: 13px; }',
+    '.routes-warn { color: #9b2c2c; background: #fdecec; border-left: 3px solid #c53030; }'
   ].join('\n');
   document.head.appendChild(style);
 
@@ -449,15 +450,16 @@
     });
   });
 
-  // Above this, the page says plainly that the route isn't the length asked
-  // for - usually because few streets connect near the start point.
-  var LENGTH_WARNING_PCT = 15;
+  // Beyond this many metres the page says plainly that the route isn't the
+  // length asked for. The server sends its own (TOLERANCE_M in routes/api.py);
+  // this is only for the straight-line preview.
+  var LENGTH_TOLERANCE_M = 500;
 
   function showResults(route) {
     var p = route.properties;
     var actual = p.lengthM || lengthOf(route.geometry.coordinates);
     var requested = p.requestedM;
-    var delta = 100 * (actual - requested) / requested;
+    var delta = Math.round(actual - requested);    // metres over (+) or under (-)
     var seconds = (actual / 1000) * state.paceSecPerKm;
     var climb = p.ascent === null || p.ascent === undefined
       ? '&mdash;'
@@ -465,16 +467,18 @@
         (p.elevation && !p.elevation.complete ? ' <span style="color:#666">(partial)</span>' : '');
 
     var notes = [];
+    var warning = null;
     var c = p.choice;
     if (p.stub) {
       notes.push('Straight-line preview, not a real route. ' + (p.stubReason || ''));
-    } else if (p.belowDirect) {
-      notes.push('The most direct route to ' +
-        (state.dest && state.dest.name ? esc(state.dest.name) : 'that point') +
-        ' is ' + km(p.directM) + ', longer than the ' + km(requested) +
-        ' you asked for. Here it is: a run there can’t be shorter.');
-    } else if (Math.abs(delta) > LENGTH_WARNING_PCT) {
-      notes.push('Couldn’t get close to ' + km(requested) + ' from here — ' +
+    } else if (p.tooFar) {
+      warning = '<b>' + (state.dest && state.dest.name ? esc(state.dest.name) : 'That point') +
+        ' is too far for a ' + km(requested) + ' run.</b> The shortest route there is ' +
+        km(p.directM) + ', ' + km(p.directM - requested) + ' more than you asked for. ' +
+        'This is that route. Choose a closer point, or a longer distance.';
+    } else if (Math.abs(actual - requested) > (p.toleranceM || LENGTH_TOLERANCE_M)) {
+      notes.push('Couldn’t get within ' + Math.round(p.toleranceM || LENGTH_TOLERANCE_M) +
+        ' m of ' + km(requested) + ' from here — ' +
         'few streets connect near this start point. Try generating again, or move the start.');
     }
     if (c && c.similar) {
@@ -490,12 +494,13 @@
       '<dl>',
       '  <dt>Requested</dt><dd>' + km(requested) + '</dd>',
       '  <dt>Actual</dt><dd>' + km(actual) +
-        ' <span style="color:#666">(' + (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%)</span></dd>',
+        ' <span style="color:#666">(' + (delta >= 0 ? '+' : '−') + Math.abs(delta) + ' m)</span></dd>',
       '  <dt>Est. time</dt><dd>' + clock(seconds) + '</dd>',
       p.shape === 'to' ? '  <dt>Arrive</dt><dd>' + arrival(seconds) + ' if you leave now</dd>' : '',
       '  <dt>Climb</dt><dd>' + climb + '</dd>',
       '</dl>'
-    ].concat(notes.map(function (n) {
+    ].concat(warning ? ['<p class="routes-note routes-warn" role="alert">' + warning + '</p>'] : [])
+     .concat(notes.map(function (n) {
       return '<p class="routes-note">' + n + '</p>';
     })).join('\n');
   }

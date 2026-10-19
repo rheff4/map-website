@@ -218,8 +218,89 @@ class Hills(unittest.TestCase):
         self.assertLessEqual(calls, api.MAX_CALLS)
 
 
+class Tolerance(unittest.TestCase):
+    """Close enough is TOLERANCE_M (500 m) at every distance, not a share of it:
+    a 20 km run 1 km out was 'close enough' at 10%, but isn't."""
+
+    def test_a_long_loop_1km_out_asks_again(self):
+        asked = []
+
+        def fake(key, body):
+            asked.append(body["options"]["round_trip"]["length"])
+            return leg(21000 if len(asked) <= 3 else 20200)
+        with mock.patch.object(api, "_ors", side_effect=fake):
+            _, actual, calls = api._best_loop("key", [-71.06, 42.35], 20000, seed=1)
+        self.assertEqual(calls, 6)                      # 5% out: once "close enough"
+        self.assertEqual(actual, 20200)
+
+    def test_a_long_loop_within_500m_does_not(self):
+        with mock.patch.object(api, "_ors", side_effect=lambda k, b: leg(20400)):
+            _, _, calls = api._best_loop("key", [-71.06, 42.35], 20000, seed=1)
+        self.assertEqual(calls, 3)
+
+    def test_a_short_loop_is_judged_in_metres_too(self):
+        # 400 m out on 2 km is 20%, but within 500 m: no second round.
+        with mock.patch.object(api, "_ors", side_effect=lambda k, b: leg(2400)):
+            _, _, calls = api._best_loop("key", [-71.06, 42.35], 2000, seed=1)
+        self.assertEqual(calls, 3)
+
+    def test_hills_never_take_a_route_more_than_500m_out(self):
+        climbs = {}
+
+        def cand(metres, climb):
+            coords = [[-71.06, 42.35], [-71.05, 42.36]]
+            climbs[id(coords)] = climb
+            return coords, float(metres)
+        cands = [cand(20300, 40), cand(19200, 300)]      # 19.2 km is within 10%
+        with mock.patch.object(api.elevation, "measure",
+                               side_effect=lambda g, c: {"ascent": climbs[id(c)]}):
+            (_, metres), _, _ = api._choose(cands, 20000, "hilly", grid=object())
+        self.assertEqual(metres, 20300)
+
+    def test_a_long_run_to_a_place_reaims_when_1km_out(self):
+        got = iter([21000, 20300])
+
+        def fake(key, body):
+            return leg(3000 if len(body["coordinates"]) == 2 else next(got))
+        with mock.patch.object(api, "_ors", side_effect=fake):
+            routes, calls, _ = api._run_to("key", [-71.0656, 42.3550], [-71.0550, 42.3640],
+                                           20000, 1)
+        self.assertEqual([round(m) for _, m in routes], [21000, 20300])
+        self.assertEqual(calls, 3)
+
+
 class RunTo(unittest.TestCase):
     START, DEST = [-71.0656, 42.3550], [-71.0550, 42.3640]
+
+    def generate_to(self, km, direct_m):
+        """generate() for a run to DEST with the direct route direct_m long;
+        any detour comes back exactly the length asked for."""
+        from routes import limits
+
+        def fake(key, body):
+            return leg(direct_m if len(body["coordinates"]) == 2 else km * 1000)
+        with mock.patch.object(api, "_ors", side_effect=fake), \
+             mock.patch.object(api.env, "secret", return_value="key"), \
+             mock.patch.object(api, "BUDGET", limits.OrsBudget(per_minute=40, per_day=2000)), \
+             mock.patch.object(api, "VISITORS", limits.VisitorLimit()):
+            return api.generate(request(shape="to", km=str(km),
+                                        to_lon=str(self.DEST[0]), to_lat=str(self.DEST[1])))["properties"]
+
+    def test_more_than_500m_short_of_the_direct_route_is_too_far(self):
+        p = self.generate_to(1.2, 1800)                 # 600 m short
+        self.assertTrue(p["tooFar"])
+        self.assertEqual((p["lengthM"], p["directM"]), (1800, 1800))
+
+    def test_within_500m_of_the_direct_route_is_the_direct_route_without_a_warning(self):
+        for km in (1.4, 2.2):                           # 400 m short, 400 m over
+            p = self.generate_to(km, 1800)
+            self.assertFalse(p["tooFar"], km)
+            self.assertEqual(p["lengthM"], 1800)
+
+    def test_more_than_500m_over_the_direct_route_detours(self):
+        p = self.generate_to(2.4, 1800)                 # 600 m over
+        self.assertFalse(p["tooFar"])
+        self.assertEqual(p["lengthM"], 2400)
 
     def test_shorter_than_the_direct_route_gets_the_direct_route(self):
         with mock.patch.object(api, "_ors", return_value=leg(1800)) as ors:

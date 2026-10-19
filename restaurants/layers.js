@@ -604,7 +604,9 @@
       esc(openText(r.open_now))
     ].filter(Boolean).join(' · ');
     var chips = r.breakdown
-      .filter(function (row) { return row.kind === 'recognition' || row.kind === 'rating'; })
+      .filter(function (row) {
+        return row.kind === 'recognition' || row.kind === 'specialty' || row.kind === 'rating';
+      })
       .map(chipHTML).join('') + licenceHTML(r.licence);
     var url = safeUrl(r.url);
 

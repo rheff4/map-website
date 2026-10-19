@@ -89,6 +89,7 @@
 }
 .r-chip-recognition { background: var(--r-accent); color: #fff; }
 .r-chip-rating { background: #edf2f7; color: #2d3748; }
+.r-chip-specialty { background: #fffaf0; color: #9c4221; border-color: #fbd38d; }
 .r-chip-licence { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
 .r-chip-weak { background: #fff; color: #718096; border-color: var(--r-line); }
 .r-chip-placeholder { background: #fff; color: var(--r-accent); border: 1px dashed var(--r-accent); }

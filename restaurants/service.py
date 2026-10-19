@@ -8,7 +8,7 @@ full ranked list this returns, so changing a filter never costs an API call.
 import os
 import re
 
-from restaurants import cuisines, hours, matching, recognition, scoring
+from restaurants import cuisines, hours, matching, prices, recognition, scoring
 from restaurants.sources import google, licences, osm, yelp
 from server import cities, env
 from server.fetch import UpstreamError
@@ -150,14 +150,14 @@ def summarize(place, lat, lon, now=None):
     """The fields the page shows, taken from the best available listing.
 
     Curated entries fill gaps the APIs leave: Michelin publishes a price and a
-    cuisine for every restaurant it lists, which OSM rarely has.
+    cuisine for every restaurant it lists, which OSM rarely has. The price
+    comes with its dollar meaning (see prices.py).
     """
     main = matching.primary(place)
     timed = next((l for l in matching.listings(place) if l.get("hours")), None)
-    curated_prices = [e["price"] for e in place["recognition"] if e.get("price")]
     curated_cuisines = [{"key": e["cuisine"], "label": cuisines.LABELS[e["cuisine"]]}
                         for e in place["recognition"] if e.get("cuisine") in cuisines.LABELS]
-    return {
+    summary = {
         "id": place["key"],
         # A recognised place keeps the name its critics publish - map data can
         # lag a rename ("Mooncusser Fish House") or style it oddly ("ZURiTO").
@@ -166,7 +166,6 @@ def summarize(place, lat, lon, now=None):
         "lat": main["lat"],
         "lon": main["lon"],
         "distance_m": round(matching.distance_m(lat, lon, main["lat"], main["lon"])),
-        "price": _first(place, "price") or (max(curated_prices) if curated_prices else None),
         "cuisines": cuisines.merge(*([l.get("cuisines") for l in matching.listings(place)]
                                      + [curated_cuisines])),
         "open_now": hours.is_open(timed["hours"], timed["utc_offset_minutes"], now) if timed else None,
@@ -174,6 +173,8 @@ def summarize(place, lat, lon, now=None):
         "brand": _first(place, "brand"),
         "closed": any(listing.get("closed") for listing in matching.listings(place)),
     }
+    summary.update(prices.describe(place, matching.listings(place)))
+    return summary
 
 
 def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):

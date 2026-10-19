@@ -1,0 +1,3 @@
+# Only for the offline tools in this folder - the site itself needs nothing
+# beyond the standard library.
+anthropic>=1.0

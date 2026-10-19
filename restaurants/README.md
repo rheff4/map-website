@@ -86,6 +86,7 @@ constant at the top. Edit and restart the server; the tests in
 | TheFork, Zomato | 2 |
 | Local food creator list | 2 each, up to 3 lists |
 | Each extra independent publisher agreeing | +2 |
+| Known for a local signature dish (see below) | 3, once |
 | Google rating, review-adjusted, above 4.4 | up to 3 |
 | Yelp rating, review-adjusted, above 4.0 | up to 3 |
 
@@ -103,6 +104,42 @@ constant at the top. Edit and restart the server; the tests in
 Each result's breakdown ("Local score 22.8" under a result) shows every point
 it earned and why others earned nothing. Use it with your food expert: when
 they disagree with a ranking, the breakdown says which weight to change.
+
+## Local specialties
+
+A restaurant gets a **"Local specialty: Lobster roll"** chip, and 3 points,
+when what is written about it says it is *known for* one of the city's
+signature dishes - not merely that it serves it. Hover the chip for the exact
+words; click it for the source. Like Meet Boston, a specialty never makes a
+place "recognised" on its own: a famous lobster spot can still be a tourist
+trap.
+
+- `data/local_dishes/<city>.json` - the signature dishes (lobster roll,
+  clam chowder, local oysters, ...). Edited by hand.
+- `data/specialties/<city>.json` - which restaurants are known for which
+  dish, with a word-for-word quote and its source. Generated; don't edit.
+
+For each recognised restaurant the tool reads the parts of its critics' and
+guides' pages that mention it, plus its own website (from OpenStreetMap), and
+gets a judgement of which signature dishes the text says it is known for. A
+label is kept only if its quote is really in the text, so whoever labels can't
+invent evidence. To regenerate after changing the dish list or the
+recognition file, either:
+
+```
+# Free: export the texts, label them in a Claude Code session, import.
+python -m restaurants.tools.find_specialties --export .cache/specialty-batches
+#   ...ask Claude Code to label each batch_NN.txt into batch_NN.labels.json...
+python -m restaurants.tools.find_specialties --import .cache/specialty-batches/*.labels.json
+
+# Paid per request: the tool calls the Claude API itself.
+pip install -r restaurants/tools/requirements.txt
+python -m restaurants.tools.find_specialties          # needs ANTHROPIC_API_KEY in .env
+```
+
+The current file was labelled the free way. It obeys robots.txt - Michelin and Boston Magazine disallow
+crawlers, so their pages are skipped - caches pages for a week, and only
+resends places whose text changed. Searches never call Claude.
 
 ## Adding recognition entries
 
@@ -196,7 +233,8 @@ return is still added, so curated places always appear in range.
 
 1. Add an entry to `shared/cities.json`: name, centre `[lon, lat]`, a label
    for the centre, zoom, bounds `[[west, south], [east, north]]`, and a
-   recognition file path.
+   recognition file path, and optionally `local_dishes` / `specialties`
+   paths for local specialties.
 2. Create that recognition file (copy the shape of `boston.json`) and fill it
    in as above.
 3. The API takes `?city=<key>`. The page uses the default city today; a city
@@ -217,10 +255,14 @@ return is still added, so curated places always appear in range.
 | `cuisines.py` | One cuisine vocabulary for Google and Yelp |
 | `hours.py` | "Open now" from weekly hours |
 | `tools/enrich_recognition.py` | Adds place ids and coordinates to entries |
+| `specialties.py` | Loads local specialties and matches them to places |
+| `tools/find_specialties.py` | Labels local specialties with Claude (offline) |
 | `fixtures/` | Demo-mode API responses (fictional) |
 | `tests/` | Unit and end-to-end tests |
 | `../data/recognition/<city>.json` | Curated recognition per city |
 | `../data/chains.json` | Chain blocklist |
+| `../data/local_dishes/<city>.json` | The city's signature dishes (by hand) |
+| `../data/specialties/<city>.json` | Restaurants' local specialties (generated) |
 
 ## Known limits
 

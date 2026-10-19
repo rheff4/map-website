@@ -17,7 +17,9 @@ How a score is built
 2. Agreement bonus. Every extra *independent* publisher that vouches for the
    place adds AGREEMENT_BONUS (supporting sources don't count). Two critics agreeing is a much stronger signal
    than one critic shouting.
-3. Ratings (supporting). Google and Yelp ratings are shrunk towards a typical
+3. Local specialty (supporting). SPECIALTY_POINTS when the restaurant's own
+   descriptions say it is known for one of the city's signature dishes.
+4. Ratings (supporting). Google and Yelp ratings are shrunk towards a typical
    rating in proportion to how few reviews there are (a Bayesian average), so
    4.9 from 14 reviews does not beat 4.6 from 900. Only the part above
    `threshold` scores, capped at `max_points`, so ratings can never outweigh
@@ -76,6 +78,16 @@ GROUP_LIMITS = {"influencer": 3, "city_guide": 2}
 # 2. Agreement between independent publishers
 # ---------------------------------------------------------------------------
 AGREEMENT_BONUS = 2   # per publisher group beyond the first
+
+# ---------------------------------------------------------------------------
+# 2b. Local specialty
+#
+# Points when a restaurant's own descriptions say it is known for one of the
+# city's signature dishes (restaurants/specialties.py). Counted once however
+# many dishes match. It shows a place is distinctly local, not that it is
+# good, so like Meet Boston it never makes a place "recognised" on its own.
+# ---------------------------------------------------------------------------
+SPECIALTY_POINTS = 3
 
 # ---------------------------------------------------------------------------
 # 3. Ratings
@@ -208,6 +220,16 @@ def score_place(place):
         breakdown.append({"kind": "agreement",
                           "text": "%d independent publishers agree" % len(groups),
                           "points": bonus})
+
+    for i, item in enumerate(place.get("specialties", [])):
+        points = SPECIALTY_POINTS if i == 0 else 0
+        total += points
+        breakdown.append({"kind": "specialty",
+                          "text": "Local specialty: %s" % item["label"],
+                          "url": item.get("source_url"),
+                          "note": "“%s” — %s" % (item["quote"], item["source"]),
+                          "points": points,
+                          "why": None if points else "counted once per restaurant"})
 
     for platform in ("google", "yelp"):
         listing = place.get(platform)

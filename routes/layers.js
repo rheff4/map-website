@@ -4,9 +4,11 @@
  * Owner: Rob - branch `routes`
  *
  * PRD features: a running route generator with adjustable distance, start
- * point, loop or out-and-back, and elevation (flattest / hilliest); and a run
- * to a restaurant, handed over by the Restaurants tab's "Run here" button
- * through view.on('restaurants:run-to').
+ * point, a loop or a one-way run to a point, and elevation (flattest /
+ * hilliest). The point is picked on the map, or is a restaurant handed over
+ * by the Restaurants tab's "Run here" button through
+ * view.on('restaurants:run-to'). The server still offers out-and-backs
+ * (shape=out-and-back); this page no longer asks for them.
  *
  * Everything here talks to generateRoute() and nothing else. It asks the
  * server (routes/api.py) for a real route on streets; if the server has no
@@ -26,9 +28,10 @@
   var state = {
     start: MapWebsite.DEFAULT_CENTER.slice(),  // Boston Common until clicked
     lengthM: 5000,
-    shape: 'loop',                             // 'loop' | 'out-and-back' | 'to'
+    shape: 'loop',                             // 'loop' | 'to'
     hills: 'balanced',                         // 'flat' | 'balanced' | 'hilly'
-    dest: null,                                // {name, lon, lat} when shape is 'to'
+    dest: null,                                // {name, lon, lat} to run to
+    picking: false,                            // next map click sets dest
     paceSecPerKm: 360,                         // 6:00 min/km
     seed: 1,
     route: null
@@ -107,19 +110,6 @@
     return coords;
   }
 
-  /* Straight out to half the distance, then back along the same line. */
-  function stubOutAndBack(start, lengthM, seed) {
-    var bearing = (seed * 67) % 360;
-    var half = lengthM / 2;
-    var steps = 24;
-
-    var out = [];
-    for (var i = 0; i <= steps; i++) {
-      out.push(destination(start, bearing, half * i / steps));
-    }
-    return out.concat(out.slice(0, -1).reverse());
-  }
-
   /*
    * SEAM. Everything else in this file depends only on this signature:
    * opts -> Promise of a GeoJSON LineString Feature.
@@ -154,7 +144,6 @@
   /* The straight-line preview, used only when the server can't route. */
   function stubRoute(opts, reason) {
     var coords = opts.shape === 'to' ? [opts.start, [opts.dest.lon, opts.dest.lat]]
-      : opts.shape === 'out-and-back' ? stubOutAndBack(opts.start, opts.lengthM, opts.seed)
       : stubLoop(opts.start, opts.lengthM, opts.seed);
 
     return {
@@ -316,18 +305,18 @@
     '  <input type="range" id="routes-distance" min="1" max="20" step="0.5" value="5">',
     '</div>',
 
+    '<div class="routes-field">',
+    '  <fieldset class="routes-shape">',
+    '    <label><input type="radio" name="routes-shape" value="loop" checked> Loop</label>',
+    '    <label><input type="radio" name="routes-shape" value="to"> To a point</label>',
+    '  </fieldset>',
+    '</div>',
+
     '<div class="routes-field routes-dest" id="routes-dest" hidden>',
     '  <span class="routes-legend">Running to</span>',
     '  <span id="routes-dest-name"></span>',
-    '  <button type="button" id="routes-dest-clear">Clear</button>',
-    '</div>',
-
-    '<div class="routes-field" id="routes-shape-field">',
-    '  <fieldset class="routes-shape">',
-    '    <label><input type="radio" name="routes-shape" value="loop" checked> Loop</label>',
-    '    <label><input type="radio" name="routes-shape" value="out-and-back"> Out and back</label>',
-    '  </fieldset>',
-    '  <p class="routes-hint" style="margin:6px 0 0">Or pick a restaurant and press <b>Run here</b>.</p>',
+    '  <button type="button" id="routes-dest-pick">Pick on map</button>',
+    '  <p class="routes-hint" style="margin:6px 0 0">Or press <b>Run here</b> on a restaurant.</p>',
     '</div>',
 
     '<div class="routes-field">',
@@ -358,8 +347,7 @@
     results: document.getElementById('routes-results'),
     dest: document.getElementById('routes-dest'),
     destName: document.getElementById('routes-dest-name'),
-    destClear: document.getElementById('routes-dest-clear'),
-    shapeField: document.getElementById('routes-shape-field')
+    destPick: document.getElementById('routes-dest-pick')
   };
 
   // ---------------------------------------------------------------- wiring
@@ -375,9 +363,17 @@
     els.distanceOut.textContent = (state.lengthM / 1000).toFixed(1) + ' km';
   });
 
+  function setShape(shape) {
+    state.shape = shape;
+    panel.querySelector('input[name="routes-shape"][value="' + shape + '"]').checked = true;
+    els.dest.hidden = shape !== 'to';
+    // Nowhere to run to yet: the next map click chooses it.
+    setPicking(shape === 'to' && !state.dest);
+  }
+
   panel.querySelectorAll('input[name="routes-shape"]').forEach(function (radio) {
     radio.addEventListener('change', function () {
-      if (radio.checked) state.shape = radio.value;
+      if (radio.checked) setShape(radio.value);
     });
   });
 
@@ -387,25 +383,29 @@
     });
   });
 
-  /* A restaurant to run to, or null to go back to loops / out-and-backs. */
+  /* Where a "to a point" run ends: {name, lon, lat}. name is null for a
+     point picked on the map, which is shown by its coordinates. */
   function setDest(dest) {
     state.dest = dest;
-    els.dest.hidden = !dest;
-    els.shapeField.hidden = !!dest;
-    if (dest) {
-      els.destName.textContent = dest.name;
-      state.shape = 'to';
-    } else {
-      state.shape = panel.querySelector('input[name="routes-shape"]:checked').value;
-    }
+    els.destName.textContent = dest.name || coord([dest.lon, dest.lat]);
     view.setData('routes:dest', destFeature());
   }
 
-  els.destClear.addEventListener('click', function () { setDest(null); });
+  /* While picking, the next map click sets the destination, not the start. */
+  function setPicking(on) {
+    state.picking = on;
+    els.destPick.textContent = on ? 'Click the map…' : 'Pick on map';
+    els.destPick.disabled = on;
+    if (!state.dest) els.destName.textContent = on ? '' : 'Nowhere yet';
+    view.getMap().getCanvas().style.cursor = on ? 'crosshair' : '';
+  }
+
+  els.destPick.addEventListener('click', function () { setPicking(true); });
 
   // "Run here" on the Restaurants tab.
   view.on('restaurants:run-to', function (dest) {
     setDest(dest);
+    setShape('to');
     sidebar.show('routes');
     view.fitBounds(boundsOf([state.start, [dest.lon, dest.lat]]), 80);
   });
@@ -421,6 +421,11 @@
   });
 
   els.generate.addEventListener('click', function () {
+    if (state.shape === 'to' && !state.dest) {
+      els.results.innerHTML = '<p class="routes-note">Pick a point on the map to run to first.</p>';
+      setPicking(true);
+      return;
+    }
     els.generate.disabled = true;
     els.generate.textContent = 'Finding a route…';
     generateRoute({
@@ -464,7 +469,8 @@
     if (p.stub) {
       notes.push('Straight-line preview, not a real route. ' + (p.stubReason || ''));
     } else if (p.belowDirect) {
-      notes.push('The most direct route to ' + esc(state.dest ? state.dest.name : 'there') +
+      notes.push('The most direct route to ' +
+        (state.dest && state.dest.name ? esc(state.dest.name) : 'that point') +
         ' is ' + km(p.directM) + ', longer than the ' + km(requested) +
         ' you asked for. Here it is: a run there can’t be shorter.');
     } else if (Math.abs(delta) > LENGTH_WARNING_PCT) {
@@ -494,14 +500,20 @@
     })).join('\n');
   }
 
-  // Clicking the map moves the start point - only while this tab is open,
-  // and never on a restaurant pin (that selects the restaurant instead).
+  // Clicking the map moves the start point - or, while picking, sets where to
+  // run to. Only while this tab is open, and never on a restaurant pin (that
+  // selects the restaurant instead; its "Run here" sets the destination).
   var PIN_LAYERS = ['restaurants:recognised', 'restaurants:other'];
   view.onMapClick(function (lonLat, e) {
     if (sidebar.active() !== 'routes') return;
     var map = view.getMap();
     var pins = PIN_LAYERS.filter(function (id) { return map.getLayer(id); });
     if (pins.length && map.queryRenderedFeatures(e.point, { layers: pins }).length) return;
+    if (state.picking) {
+      setDest({ name: null, lon: lonLat[0], lat: lonLat[1] });
+      setPicking(false);
+      return;
+    }
     setStart(lonLat);
   });
 

@@ -101,6 +101,9 @@ a.r-chip:hover { text-decoration: underline; }
 .r-why li { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
 .r-points { white-space: nowrap; color: #2d3748; }
 .r-maplink { display: inline-block; margin-top: 4px; font-size: 12px; color: #2b6cb0; }
+.r-runhere { display: block; margin-top: 6px; padding: 4px 10px; font: inherit; font-size: 12px; font-weight: 600;
+  color: #fff; background: #2b6cb0; border: 0; border-radius: 6px; cursor: pointer; }
+.r-runhere:hover { background: #245c99; }
 
 /* Pick-a-point mode: crosshair even over pins, whose hover sets an inline cursor. */
 #map.restaurants-picking .maplibregl-canvas { cursor: crosshair !important; }

@@ -611,6 +611,7 @@
         breakdownHTML(r) +
         (url ? '<a class="r-maplink" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +
                'Directions & details ↗</a>' : '') +
+        '<button type="button" class="r-runhere">Run here →</button>' +
       '</div>' +
     '</li>';
   }
@@ -623,6 +624,14 @@
   $('list').addEventListener('click', function (e) {
     if (e.target.closest('a, summary, details ul')) return;
     var item = e.target.closest('.r-item');
+    // "Run here" hands the restaurant to the Routes tab as a destination.
+    if (item && e.target.closest('.r-runhere')) {
+      var id = item.getAttribute('data-id');
+      state.data.results.forEach(function (r) {
+        if (r.id === id) view.emit('restaurants:run-to', { name: r.name, lon: r.lon, lat: r.lat });
+      });
+      return;
+    }
     if (item) select(item.getAttribute('data-id'), 'list');
   });
 

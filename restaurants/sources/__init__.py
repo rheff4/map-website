@@ -3,7 +3,8 @@ Third-party restaurant data. Each source turns its API's response into the
 same "listing" shape:
 
     {'source': 'google'|'yelp', 'id', 'name', 'address', 'lat', 'lon',
-     'price': 1-4 or None, 'cuisines': [{'key', 'label'}],
+     'price': 1-4 or None, 'price_text': Google's '$20–30' or None,
+     'cuisines': [{'key', 'label'}],
      'rating', 'review_count', 'url', 'closed': bool,
      'hours': [...] or None, 'utc_offset_minutes': int or None}
 

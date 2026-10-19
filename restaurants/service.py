@@ -1,5 +1,6 @@
 """
-Restaurant search: fetch -> merge -> attach recognition -> exclude -> score -> rank.
+Restaurant search: fetch -> merge -> attach recognition -> exclude ->
+attach local specialties -> score -> rank.
 
 The page does the filtering by price, cuisine and "open now" itself, on the
 full ranked list this returns, so changing a filter never costs an API call.
@@ -8,7 +9,7 @@ full ranked list this returns, so changing a filter never costs an API call.
 import os
 import re
 
-from restaurants import cuisines, hours, matching, prices, recognition, scoring
+from restaurants import cuisines, hours, matching, prices, recognition, scoring, specialties
 from restaurants.sources import google, licences, osm, yelp
 from server import cities, env
 from server.fetch import UpstreamError
@@ -198,6 +199,7 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
 
     licence_index = None if m["demo"] else _licence_index(status, city)
 
+    local = specialties.load(city)
     chains = scoring.load_chains()
     excluded = {"chains": 0, "closed": 0}
     results = []
@@ -213,6 +215,7 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
         if scoring.is_chain(item["name"], chains) or (brand and scoring.is_chain(brand, chains)):
             excluded["chains"] += 1
             continue
+        place["specialties"] = specialties.for_place(place, local)
         item.update(scoring.score_place(place))
         results.append(item)
 

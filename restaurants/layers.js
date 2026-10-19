@@ -18,10 +18,10 @@
   var API = '/api/restaurants';
 
   var COLORS = {
-    recognised: '#c53030',
+    recognised: '#e8743f',   // the logo's orange
     other: '#a0aec0',
-    selected: '#1a202c',
-    origin: '#2b6cb0'
+    selected: '#1b4436',     // the logo's green
+    origin: '#4a5568'
   };
   var RADII = [500, 1000, 1500, 2000, 3000, 5000];
   var EMPTY = { type: 'FeatureCollection', features: [] };

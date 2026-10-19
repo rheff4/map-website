@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="180 215 910 850" role="img" aria-label="Fuel Stop">
+  <!-- Fuel Stop logo: a runner's dot, the path they run, and the fork it
+       becomes. Transparent background. Colours: #1b4436 green, #e8743f orange. -->
+  <circle cx="312" cy="411" r="47" fill="#e8743f"/>
+  <g fill="none" stroke="#1b4436" stroke-linecap="round" stroke-linejoin="round">
+    <path stroke-width="62" d="M400,420 C470,424 548,428 566,484 C582,532 512,548 466,568
+             C416,590 396,624 400,662 C408,734 528,770 640,770 C764,770 862,742 880,662
+             C886,630 886,598 886,556"/>
+    <path stroke-width="34" d="M825,255 L812,428 M893,255 L893,436 M960,255 L974,428"/>
+  </g>
+  <path fill="#1b4436" d="M795,428 H842 A17,17 0 0 0 876,428 H910 A17,17 0 0 0 943,428 H991
+           C992,468 984,494 952,522 C926,544 916,560 916,584 L856,584 C856,560 846,544 820,522
+           C790,494 794,468 795,428 Z"/>
+  <text x="635" y="1000" text-anchor="middle" fill="#1b4436"
+        font-family="Manrope, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+        font-weight="700" font-size="200" letter-spacing="-2">Fuel Stop</text>
+</svg>

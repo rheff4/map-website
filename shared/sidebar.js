@@ -1,5 +1,5 @@
 /*
- * Map Website - shared sidebar.
+ * Fuel Stop - shared sidebar.
  *
  * The right-hand sidebar has one tab per feature. Each feature owns the panel
  * behind its tab and fills it from its own folder:

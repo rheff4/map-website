@@ -1,5 +1,5 @@
 /*
- * Map Website - shared base map.
+ * Fuel Stop - shared base map.
  *
  * There is ONE map on the page and it lives here. Feature branches never
  * create a map; they hand layers to the one that already exists:

@@ -39,6 +39,9 @@
 
   var EMPTY = { type: 'FeatureCollection', features: [] };
 
+  // Colours from the logo (shared/brand/logo.svg).
+  var BRAND = { green: '#1b4436', greenDark: '#133128', orange: '#e8743f' };
+
   // ------------------------------------------------------------ geometry
 
   var EARTH_R = 6371008.8; // metres, mean radius
@@ -215,12 +218,12 @@
     type: 'line',
     data: EMPTY,
     paint: {
-      'line-color': '#2b6cb0',
+      'line-color': BRAND.green,
       'line-width': 5,
       'line-opacity': 0.85
     },
     layout: { 'line-cap': 'round', 'line-join': 'round' },
-    legend: { label: 'Running route', color: '#2b6cb0' },
+    legend: { label: 'Running route', color: BRAND.green },
     // Required by HeiGIT's terms wherever openrouteservice results are shown,
     // in exactly this wording.
     attribution: '&copy; <a href="https://openrouteservice.org/" target="_blank" rel="noopener">' +
@@ -234,9 +237,9 @@
     data: startFeature(),
     paint: {
       'circle-radius': 7,
-      'circle-color': '#111',
-      'circle-stroke-width': 2,
-      'circle-stroke-color': '#fff'
+      'circle-color': '#fff',
+      'circle-stroke-width': 3,
+      'circle-stroke-color': BRAND.green
     }
   });
 
@@ -254,7 +257,7 @@
     data: EMPTY,
     paint: {
       'circle-radius': 8,
-      'circle-color': '#c53030',
+      'circle-color': BRAND.orange,
       'circle-stroke-width': 2,
       'circle-stroke-color': '#fff'
     },
@@ -274,13 +277,13 @@
     '.routes-shape { display: flex; gap: 12px; border: 0; padding: 0; margin: 0; }',
     '.routes-shape label { font-weight: 400; display: flex; align-items: center; gap: 5px; }',
     '.routes-pace { width: 70px; }',
-    '.routes-dest { background: #f0f5fb; border-radius: 8px; padding: 8px 10px; }',
+    '.routes-dest { background: #eef3ef; border-radius: 8px; padding: 8px 10px; }',
     '.routes-dest button { font: inherit; font-size: 12px; margin-left: 6px; cursor: pointer; }',
     '.routes-hint { color: #666; margin: 0 0 16px; }',
     '#routes-generate {',
     '  width: 100%; padding: 10px; font: inherit; font-weight: 600; color: #fff;',
-    '  background: #2b6cb0; border: 0; border-radius: 8px; cursor: pointer; }',
-    '#routes-generate:hover { background: #245c99; }',
+    '  background: ' + BRAND.green + '; border: 0; border-radius: 8px; cursor: pointer; }',
+    '#routes-generate:hover { background: ' + BRAND.greenDark + '; }',
     '.routes-results { margin-top: 16px; border-top: 1px solid #e2e2e2; padding-top: 12px; }',
     '.routes-results dl { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; margin: 0; }',
     '.routes-results dt { color: #666; }',
@@ -534,7 +537,7 @@
   // routes/tools/build_toilets.py. Labels appear from zoom 13 so the city-wide
   // view isn't buried in text; MapLibre hides any that would overlap.
 
-  var TOILET_GREEN = '#2f855a';
+  var TOILET_BLUE = '#2b6cb0';
   var LABEL_FONT = ['Montserrat Medium', 'Open Sans Bold', 'Noto Sans Regular'];  // the basemap's own
 
   function esc(text) {
@@ -569,11 +572,11 @@
       data: toilets,
       paint: {
         'circle-radius': 6,
-        'circle-color': TOILET_GREEN,
+        'circle-color': TOILET_BLUE,
         'circle-stroke-width': 1.5,
         'circle-stroke-color': '#fff'
       },
-      legend: { label: 'Public toilets', color: TOILET_GREEN },
+      legend: { label: 'Public toilets', color: TOILET_BLUE },
       popup: toiletPopup
     });
     view.addLayer({
@@ -590,7 +593,7 @@
         'text-optional': true
       },
       paint: {
-        'text-color': '#22543d',
+        'text-color': '#1e4e8c',
         'text-halo-color': '#fff',
         'text-halo-width': 1.5,
         'text-opacity': ['step', ['zoom'], 0, 13, 1]

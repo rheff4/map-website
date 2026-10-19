@@ -1,7 +1,13 @@
-# Map Website
+# Fuel Stop
+
+<img src="shared/brand/logo.svg" alt="Fuel Stop" width="200">
 
 One interactive map for foodie runners new to a city: running routes, public
-bathrooms, and authentic local restaurants.
+bathrooms, and authentic local restaurants. (Working title until 19 October
+2026: Map Website. The spec files keep that name.)
+
+The logo is `shared/brand/logo.svg`, with the mark alone in `mark.svg`. Its
+colours are the site's: green `#1b4436`, orange `#e8743f`, cream `#f8f6f1`.
 
 Current spec: **[Map Website_Sprint 1_PRD 3.md](Map%20Website_Sprint%201_PRD%203.md)**.
 Earlier revisions are kept as the record: `SilvaHefferon_ProjectBrief.pdf`

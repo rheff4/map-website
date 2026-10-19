@@ -1,7 +1,13 @@
 /* Restaurants tab. Loaded by restaurants/layers.js; every class starts with r-. */
 
 #panel-restaurants {
-  --r-accent: #c53030;
+  /* Colours from the logo (shared/brand/logo.svg): orange marks recognised
+     places, green is for controls. White text on this orange is too faint,
+     so text-bearing fills use --r-accent-deep or a pale tint instead. */
+  --r-accent: #e8743f;
+  --r-accent-deep: #b9501f;
+  --r-accent-pale: #fbe6da;
+  --r-green: #1b4436;
   --r-muted: #666;
   --r-line: #e2e2e2;
   --r-soft: #f7f7f7;
@@ -37,20 +43,20 @@
   border: 1px solid var(--r-line); border-radius: 999px; background: #fff; color: #333;
 }
 .r-btn:hover { background: var(--r-soft); }
-.r-btn[aria-pressed="true"] { background: var(--r-accent); border-color: var(--r-accent); color: #fff; }
+.r-btn[aria-pressed="true"] { background: var(--r-green); border-color: var(--r-green); color: #fff; }
 .r-btn:disabled { opacity: .6; cursor: progress; }
-.r-btn:focus-visible, .r-name:focus-visible { outline: 2px solid var(--r-accent); outline-offset: 2px; }
+.r-btn:focus-visible, .r-name:focus-visible { outline: 2px solid var(--r-green); outline-offset: 2px; }
 .r-prices .r-btn { min-width: 46px; }
 
 .r-search {
   font: inherit; font-size: 15px; font-weight: 600; padding: 10px 14px; cursor: pointer;
-  border: 0; border-radius: 8px; background: var(--r-accent); color: #fff;
+  border: 0; border-radius: 8px; background: var(--r-green); color: #fff;
 }
 .r-search:hover { filter: brightness(1.08); }
 .r-search:disabled { opacity: .6; cursor: progress; }
-.r-search:focus-visible { outline: 2px solid var(--r-accent); outline-offset: 2px; }
-.r-search.is-changed { box-shadow: 0 0 0 3px rgba(197, 48, 48, .25); }
-.r-pending { margin: -6px 0 0; font-size: 12px; color: var(--r-accent); }
+.r-search:focus-visible { outline: 2px solid var(--r-green); outline-offset: 2px; }
+.r-search.is-changed { box-shadow: 0 0 0 3px rgba(232, 116, 63, .45); }
+.r-pending { margin: -6px 0 0; font-size: 12px; color: var(--r-accent-deep); }
 
 .r-status { font-size: 13px; color: var(--r-muted); margin-bottom: 8px; }
 .r-status-empty, .r-status-error { color: #333; padding: 10px; border-radius: 6px; background: var(--r-soft); }
@@ -69,12 +75,12 @@
   border-left: 3px solid transparent; cursor: pointer;
 }
 .r-item:hover { background: var(--r-soft); }
-.r-item.is-selected { background: #fff5f5; border-left-color: var(--r-accent); }
+.r-item.is-selected { background: #fdf0e8; border-left-color: var(--r-accent); }
 .r-rank {
   flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
   font-size: 12px; font-weight: 700; background: #edf2f7; color: #4a5568;
 }
-.r-item.is-recognised .r-rank { background: var(--r-accent); color: #fff; }
+.r-item.is-recognised .r-rank { background: var(--r-accent-deep); color: #fff; }
 .r-body { min-width: 0; flex: 1; }
 .r-name {
   display: block; padding: 0; border: 0; background: none; cursor: pointer; text-align: left;
@@ -87,11 +93,11 @@
   display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px;
   line-height: 1.6; text-decoration: none; border: 1px solid transparent;
 }
-.r-chip-recognition { background: var(--r-accent); color: #fff; }
+.r-chip-recognition { background: var(--r-accent-pale); color: #8a3a12; }
 .r-chip-rating { background: #edf2f7; color: #2d3748; }
 .r-chip-licence { background: #f0fff4; color: #276749; border-color: #9ae6b4; }
 .r-chip-weak { background: #fff; color: #718096; border-color: var(--r-line); }
-.r-chip-placeholder { background: #fff; color: var(--r-accent); border: 1px dashed var(--r-accent); }
+.r-chip-placeholder { background: #fff; color: var(--r-accent-deep); border: 1px dashed var(--r-accent); }
 a.r-chip:hover { text-decoration: underline; }
 .r-chip-tag { font-size: 10px; text-transform: uppercase; letter-spacing: .03em; opacity: .8; }
 
@@ -100,10 +106,10 @@ a.r-chip:hover { text-decoration: underline; }
 .r-why ul { list-style: none; margin: 4px 0 0; padding: 0; }
 .r-why li { display: flex; justify-content: space-between; gap: 8px; padding: 1px 0; }
 .r-points { white-space: nowrap; color: #2d3748; }
-.r-maplink { display: inline-block; margin-top: 4px; font-size: 12px; color: #2b6cb0; }
+.r-maplink { display: inline-block; margin-top: 4px; font-size: 12px; color: var(--r-green); }
 .r-runhere { display: block; margin-top: 6px; padding: 4px 10px; font: inherit; font-size: 12px; font-weight: 600;
-  color: #fff; background: #2b6cb0; border: 0; border-radius: 6px; cursor: pointer; }
-.r-runhere:hover { background: #245c99; }
+  color: #fff; background: var(--r-green); border: 0; border-radius: 6px; cursor: pointer; }
+.r-runhere:hover { background: #133128; }
 
 /* Pick-a-point mode: crosshair even over pins, whose hover sets an inline cursor. */
 #map.restaurants-picking .maplibregl-canvas { cursor: crosshair !important; }

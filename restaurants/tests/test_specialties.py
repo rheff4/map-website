@@ -50,9 +50,20 @@ class VerifiedTest(unittest.TestCase):
             {"dish": "oysters", "source": 1, "quote": "the best oysters in New England"},
         ], self.SOURCES)
         self.assertEqual([k["dish"] for k in kept], ["lobster_roll"])
-        self.assertEqual(kept[0]["source"], "Eater 38")
+        self.assertEqual(kept[0]["source"], "Eater 38 - The 38 best")
         self.assertEqual(kept[0]["source_url"], "https://eater.example/38")
         self.assertEqual(len(dropped), 1)
+
+    def test_list_title_kept_as_evidence(self):
+        sources = [dict(self.SOURCES[0], label="Meet Boston guide - Top 10 Best Places to Get Oysters")]
+        kept, _ = find_specialties.verified(
+            [{"dish": "oysters", "source": 1, "quote": "This North End raw bar is famous"}], sources)
+        self.assertEqual(kept[0]["source"], "Meet Boston guide - Top 10 Best Places to Get Oysters")
+
+    def test_branches_with_one_name_are_kept_apart(self):
+        a = {"name": "Row 34", "lat": 42.3496, "lon": -71.0475}
+        b = {"name": "Row 34", "lat": 42.3620, "lon": -71.0864}
+        self.assertNotEqual(find_specialties._key(a), find_specialties._key(b))
 
     def test_one_label_per_dish(self):
         quote = "famous for its hot buttered lobster roll"

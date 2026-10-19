@@ -119,18 +119,25 @@ trap.
 - `data/specialties/<city>.json` - which restaurants are known for which
   dish, with a word-for-word quote and its source. Generated; don't edit.
 
-To regenerate after changing the dish list or the recognition file:
+For each recognised restaurant the tool reads the parts of its critics' and
+guides' pages that mention it, plus its own website (from OpenStreetMap), and
+gets a judgement of which signature dishes the text says it is known for. A
+label is kept only if its quote is really in the text, so whoever labels can't
+invent evidence. To regenerate after changing the dish list or the
+recognition file, either:
 
 ```
-pip install -r restaurants/tools/requirements.txt   # once: the Claude SDK
+# Free: export the texts, label them in a Claude Code session, import.
+python -m restaurants.tools.find_specialties --export .cache/specialty-batches
+#   ...ask Claude Code to label each batch_NN.txt into batch_NN.labels.json...
+python -m restaurants.tools.find_specialties --import .cache/specialty-batches/*.labels.json
+
+# Paid per request: the tool calls the Claude API itself.
+pip install -r restaurants/tools/requirements.txt
 python -m restaurants.tools.find_specialties          # needs ANTHROPIC_API_KEY in .env
 ```
 
-For each recognised restaurant the tool reads the parts of its critics' and
-guides' pages that mention it, plus its own website (from OpenStreetMap), and
-asks Claude which signature dishes the text says it is known for. A label is
-kept only if its quote is really in the text, so the model can't invent
-evidence. It obeys robots.txt - Michelin and Boston Magazine disallow
+The current file was labelled the free way. It obeys robots.txt - Michelin and Boston Magazine disallow
 crawlers, so their pages are skipped - caches pages for a week, and only
 resends places whose text changed. Searches never call Claude.
 

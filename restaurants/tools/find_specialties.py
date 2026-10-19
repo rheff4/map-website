@@ -15,8 +15,14 @@ text; labels whose quote is not found in the text are thrown away.
 Writes data/specialties/<city>.json, which searches read. Only places whose
 text changed are sent to Claude again, so reruns are cheap.
 
-Needs ANTHROPIC_API_KEY (in .env or the environment) and the Anthropic SDK,
-which the site itself does not use:
+Without the API (free): export the texts, label them in a Claude Code session
+(or by hand), then import. Imported labels go through the same quote check.
+
+    python -m restaurants.tools.find_specialties --export .cache/specialty-batches
+    python -m restaurants.tools.find_specialties --import .cache/specialty-batches/*.labels.json
+
+With the Claude API (paid per request): needs ANTHROPIC_API_KEY in .env and
+the Anthropic SDK, which the site itself does not use:
 
     pip install -r restaurants/tools/requirements.txt
 
@@ -332,6 +338,13 @@ def classify(client, name, dishes, sources):
     return json.loads(text)["known_for"]
 
 
+def _short_label(label):
+    """'Meet Boston guide - Top 10 Best Places to Get Oysters' is kept whole: a
+    list's title is often the evidence. A website's page title is not."""
+    own = "The restaurant's own website"
+    return own if label.startswith(own) else label
+
+
 def verified(labels, sources):
     """Keep labels whose quote really is in the cited source; one per dish."""
     kept, dropped, seen = [], [], set()
@@ -348,7 +361,7 @@ def verified(labels, sources):
             quote = " ".join(words[:MAX_QUOTE_WORDS]) + " …"
         seen.add(label["dish"])
         kept.append({"dish": label["dish"], "quote": quote, "source_url": source["url"],
-                     "source": source["label"].split(" - ")[0]})
+                     "source": _short_label(source["label"])})
     return kept, dropped
 
 
@@ -356,12 +369,42 @@ def verified(labels, sources):
 # Main
 # ---------------------------------------------------------------------------
 
+def _key(place):
+    """One restaurant can have several branches under one name (Row 34)."""
+    return "%s@%.4f,%.4f" % (place["name"], place["lat"], place["lon"])
+
+
 def _existing(path):
     try:
         with open(path, encoding="utf-8") as f:
-            return {p["name"]: p for p in json.load(f).get("places", [])}
+            return {_key(p): p for p in json.load(f).get("places", [])}
     except (FileNotFoundError, ValueError):
         return {}
+
+
+def _load_labels(paths):
+    """{restaurant name: [{'dish', 'source', 'quote'}]} from label files."""
+    labels = {}
+    for path in paths:
+        with open(path, encoding="utf-8") as f:
+            labels.update(json.load(f))
+    return labels
+
+
+def export_batches(out_dir, todo, dishes, batch_size):
+    """Write each restaurant's prompt to text files, to be labelled in a
+    Claude Code session (or by hand) instead of through the paid API."""
+    os.makedirs(out_dir, exist_ok=True)
+    batches = [todo[i:i + batch_size] for i in range(0, len(todo), batch_size)]
+    for n, batch in enumerate(batches, 1):
+        with open(os.path.join(out_dir, "batch_%02d.txt" % n), "w", encoding="utf-8") as f:
+            f.write(SYSTEM + "\n\nAnswer for every restaurant below in batch_%02d.labels.json:\n"
+                    '{"<restaurant name>": [{"dish": "<key>", "source": <number>, '
+                    '"quote": "<exact words>"}], ...}\n'
+                    "Use [] for a restaurant with no signature dish.\n" % n)
+            for place, sources in batch:
+                f.write("\n" + "=" * 78 + "\n" + prompt(place["name"], dishes, sources) + "\n")
+    print("Wrote %d batch file(s) to %s." % (len(batches), out_dir))
 
 
 def main(argv=None):
@@ -370,7 +413,14 @@ def main(argv=None):
     parser.add_argument("--only", help="one restaurant, by name")
     parser.add_argument("--force", action="store_true", help="relabel places whose text is unchanged")
     parser.add_argument("--dry-run", action="store_true", help="print, don't write the file")
+    parser.add_argument("--export", metavar="DIR",
+                        help="no API: write the restaurants' texts to DIR for labelling elsewhere")
+    parser.add_argument("--batch-size", type=int, default=20)
+    parser.add_argument("--import", dest="import_files", metavar="FILE", nargs="+",
+                        help="no API: read labels written for --export batches")
     args = parser.parse_args(argv)
+    # Windows consoles can't print every name ("Lê Madeline"); don't crash on it.
+    sys.stdout.reconfigure(errors="replace")
 
     env.load(os.path.join(ROOT, ".env"))
     city = cities.get(args.city)
@@ -379,14 +429,21 @@ def main(argv=None):
         sys.exit("No signature dishes for %s - add %s first." % (city["name"], city.get("local_dishes")))
     out_path = cities.data_path(city["specialties"])
 
-    try:
-        import anthropic
-    except ImportError:
-        sys.exit("Install the Anthropic SDK first: pip install -r restaurants/tools/requirements.txt")
-    key = env.secret("ANTHROPIC_API_KEY")
-    if not key:
-        sys.exit("Set ANTHROPIC_API_KEY in .env (see .env.example).")
-    client = anthropic.Anthropic(api_key=key)
+    imported, client, labelled_by = None, None, MODEL
+    if args.import_files:
+        imported = _load_labels(args.import_files)
+        labelled_by = "%s, in a Claude Code session (labels imported, no API)" % MODEL
+    elif not args.export:
+        try:
+            import anthropic
+        except ImportError:
+            sys.exit("Install the Anthropic SDK first: pip install -r restaurants/tools/requirements.txt\n"
+                     "Or label without the API: --export DIR, then --import DIR/*.labels.json")
+        key = env.secret("ANTHROPIC_API_KEY")
+        if not key:
+            sys.exit("Set ANTHROPIC_API_KEY in .env (see .env.example).\n"
+                     "Or label without the API: --export DIR, then --import DIR/*.labels.json")
+        client = anthropic.Anthropic(api_key=key)
 
     entries = [e for e in recognition.load(city)["entries"] if e.get("lat") is not None]
     places = group_places(entries)
@@ -400,7 +457,7 @@ def main(argv=None):
                 if "openstreetmap.org" not in (l.get("url") or "")}
 
     old = _existing(out_path)
-    records, asked, labelled, failed = dict(old), 0, 0, 0
+    records, todo, asked, labelled, failed = dict(old), [], 0, 0, 0
     for i, place in enumerate(places, 1):
         sources, skipped = gather_sources(place, websites)
         digest = input_hash(place["name"], sources, dishes)
@@ -408,17 +465,30 @@ def main(argv=None):
                   "known_for": [], "sources_read": [s["url"] for s in sources],
                   "sources_skipped": skipped, "input_hash": digest}
 
-        previous = old.get(place["name"])
+        previous = old.get(_key(place))
         if previous and previous.get("input_hash") == digest and not args.force:
             status = "unchanged"
             record = previous
         elif not sources:
             status = "no text to read"
+        elif args.export:
+            todo.append((place, sources))
+            continue
         else:
-            asked += 1
             try:
-                labels, dropped = verified(classify(client, place["name"], dishes, sources), sources)
-            except (RuntimeError, ValueError, KeyError) as e:
+                if imported is not None:
+                    if place["name"] not in imported:
+                        print("  [%d/%d] %s: not in the imported labels - left as before"
+                              % (i, len(places), place["name"]))
+                        continue
+                    answer = imported[place["name"]]
+                else:
+                    asked += 1
+                    answer = classify(client, place["name"], dishes, sources)
+                answer = [a for a in answer if a.get("dish") in dishes
+                          and isinstance(a.get("source"), int) and 1 <= a["source"] <= len(sources)]
+                labels, dropped = verified(answer, sources)
+            except (RuntimeError, ValueError, KeyError, TypeError) as e:
                 failed += 1
                 print("  [%d/%d] %s: FAILED - %s" % (i, len(places), place["name"], e))
                 continue
@@ -427,10 +497,14 @@ def main(argv=None):
             if dropped:
                 status += "  (CHECK: dropped %d label(s) whose quote was not in the text)" % len(dropped)
         labelled += bool(record["known_for"])
-        records[place["name"]] = record
+        records[_key(place)] = record
         print("  [%d/%d] %s: %s" % (i, len(places), place["name"], status))
         for item in record["known_for"] if status != "unchanged" else []:
             print("        %s - \"%s\" (%s)" % (item["dish"], item["quote"], item["source"]))
+
+    if args.export:
+        export_batches(args.export, todo, dishes, args.batch_size)
+        return
 
     print("\n%d places, %d sent to Claude, %d with a local specialty, %d failed."
           % (len(places), asked, labelled, failed))
@@ -447,7 +521,7 @@ def main(argv=None):
             "what the labels are based on.",
         ],
         "city": city["key"],
-        "model": MODEL,
+        "model": labelled_by,
         "generated": datetime.date.today().isoformat(),
         "places": sorted(records.values(), key=lambda p: p["name"].lower()),
     }

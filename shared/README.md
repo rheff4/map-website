@@ -8,7 +8,6 @@ person, since both branches depend on this folder.
 | `index.html`     | The page. Creates the one map and loads feature scripts |
 | `map.js`         | The base map: layer registry, camera, legend            |
 | `sidebar.js`     | The right-hand sidebar: one tab and panel per feature   |
-| `sample-data.js` | Demo fixture from `spikes/spike.py`, delete when unused |
 
 Run `python server/app.py` and open http://localhost:8000/. No build step, no
 install. Opening the file directly does not work: it loads scripts by relative
@@ -81,7 +80,13 @@ rest.
 | `view.onMapClick(([lon, lat], e) => {})`  | Any map click; returns an unsubscribe   |
 | `view.ready((view, map) => {})`           | Runs once the style has loaded          |
 | `view.listLayers()`                       | Registered layer ids                    |
+| `view.emit(name, data)` / `view.on(name, fn)` | Messages between features (below)   |
 | `view.getMap()`                           | Raw MapLibre map, escape hatch          |
+
+**Messages between features** are the one sanctioned crossing between them.
+A message is named after the feature that sends it. Today there is one:
+`restaurants:run-to` `{name, lon, lat}`, sent by "Run here" on a restaurant
+and handled by Routes, which plans a run to that place.
 
 The legend renders itself from registered layers, so adding an entry needs no
 shared markup.

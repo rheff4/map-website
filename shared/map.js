@@ -81,6 +81,7 @@
     var registry = {};   // id -> layer spec
     var ready = false;
     var pending = [];    // work queued until the style finishes loading
+    var messages = {};   // name -> [fn], see view.on / view.emit
 
     // Anything touching sources or layers has to wait for the style, so
     // callers can register layers immediately without caring about timing.
@@ -283,6 +284,21 @@
         function handler(e) { fn([e.lngLat.lng, e.lngLat.lat], e); }
         map.on('click', handler);
         return function off() { map.off('click', handler); };
+      },
+
+      /*
+       * Messages between features, the one sanctioned crossing between them.
+       * Names are namespaced by the feature that sends them. In use:
+       *   'restaurants:run-to'  {name, lon, lat}  "Run here" on a restaurant
+       */
+      on: function (name, fn) {
+        (messages[name] = messages[name] || []).push(fn);
+        return view;
+      },
+
+      emit: function (name, data) {
+        (messages[name] || []).forEach(function (fn) { fn(data); });
+        return view;
       },
 
       getMap: function () {

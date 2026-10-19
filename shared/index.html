@@ -89,13 +89,6 @@
 <script src="./map.js"></script>
 <script src="./sidebar.js"></script>
 
-<!--
-  Demo fixture: a snapshot of Boston OSM data from spikes/spike.py, so the page
-  shows something real before either feature exists. Delete this line and the
-  demo block below once restaurants/ and routes/ load their own data.
--->
-<script src="./sample-data.js"></script>
-
 <script>
   // One map for the whole site. Both features add layers to this object.
   window.view = MapWebsite.createMap({ container: 'map' });
@@ -112,44 +105,6 @@
 -->
 <script src="../routes/layers.js"></script>
 <script src="../restaurants/layers.js"></script>
-
-<script>
-  // ---- demo block: remove once the real features load their own data ----
-  const asPoints = (items) => ({
-    type: 'FeatureCollection',
-    features: items.map((p) => ({
-      type: 'Feature',
-      geometry: { type: 'Point', coordinates: [p.lon, p.lat] },
-      properties: { name: p.name, sub: p.sub }
-    }))
-  });
-
-  const popup = (props) =>
-    '<b>' + props.name + '</b>' + (props.sub ? '<br>' + props.sub : '');
-
-  // Restaurants now load their own data (restaurants/layers.js).
-
-  view.addLayer({
-    id: 'routes:sample-bathrooms',
-    type: 'circle',
-    data: asPoints(SAMPLE_DATA.bathrooms),
-    paint: {
-      'circle-radius': 7,
-      'circle-color': '#2f855a',
-      'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
-    },
-    legend: { label: 'Public toilets', color: '#2f855a' },
-    popup: popup
-  });
-
-  view.ready((v, map) => {
-    new maplibregl.Marker({ color: '#000' })
-      .setLngLat(SAMPLE_DATA.start)
-      .addTo(map);
-  });
-  // ---- end demo block ----
-</script>
 
 </body>
 </html>

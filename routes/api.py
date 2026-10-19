@@ -63,6 +63,15 @@ SIMILAR_CLIMB_M = 10
 DIRECT_SLACK = 1.05
 RUN_TO_AIMS = 3
 
+# A run to a destination bends out through waypoints along a circular arc
+# from the start to the destination, on one side of the straight line. With
+# one waypoint the two legs met at a point: a hairpin that read as running
+# out and back. An ellipse around the two put its last waypoint beyond the
+# destination, so runs overshot it and turned back. These are the waypoints'
+# places along the arc, as fractions of its length.
+RUN_TO_ARC = (0.25, 0.5, 0.75)
+
+
 EARTH_R = 6371008.8
 
 # One ORS key serves every visitor: see routes/limits.py.
@@ -210,10 +219,10 @@ def _choose(candidates, length, hills, grid):
     }
     if hills == "balanced" or grid is None or len(measured) < 2:
         c, e = min(measured, key=lambda m: off(m[0]))
-        return c, e, choice
-    choice["similar"] = max(climbs) - min(climbs) < SIMILAR_CLIMB_M
-    pick = min if hills == "flat" else max
-    c, e = pick(measured, key=lambda m: m[1]["ascent"])
+    else:
+        choice["similar"] = max(climbs) - min(climbs) < SIMILAR_CLIMB_M
+        pick = min if hills == "flat" else max
+        c, e = pick(measured, key=lambda m: m[1]["ascent"])
     return c, e, choice
 
 
@@ -425,11 +434,12 @@ def _run_to(key, start, dest, length, seed, explore=False):
 
     The direct route sets a floor: asked for less (or barely more), the
     runner gets the direct route and the page says how long it really is.
-    Longer runs bend out through one waypoint to the side of the straight
-    line, placed on the ellipse whose start-to-waypoint-to-dest length, scaled
-    by how much longer this pair's streets run than the crow flies, is the
-    requested distance; re-aimed like an out-and-back. Both sides are tried
-    when exploring for hills, or when one side is water.
+    Longer runs bend out to one side through waypoints along an ellipse
+    around start and destination (RUN_TO_ARC), sized so the straight-line
+    path through them, scaled by how much longer this pair's streets run than
+    the crow flies, is the requested distance; then re-aimed like an
+    out-and-back. Both sides are tried when exploring for hills, when one
+    side is water. Spurs ORS adds to reach a waypoint are cut (_trim_spurs).
 
     -> ([(coords, metres), ...], calls, direct metres)"""
     direct = _ors(key, {"coordinates": [start, dest]})
@@ -439,9 +449,7 @@ def _run_to(key, start, dest, length, seed, explore=False):
 
     straight = max(_haversine(start, dest), 1.0)
     street = max(1.0, direct[1] / straight)
-    mid = [(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]
-    toward = _bearing(start, dest)
-    sides = (90, -90) if seed % 2 else (-90, 90)
+    sides = (1, -1) if seed % 2 else (-1, 1)
 
     candidates = []
     for side in sides:
@@ -449,16 +457,14 @@ def _run_to(key, start, dest, length, seed, explore=False):
         for _ in range(RUN_TO_AIMS):
             if calls >= MAX_CALLS:
                 break
-            semi = target / street / 2
-            out = math.sqrt(max(semi * semi - (straight / 2) ** 2, 0.0))
-            waypoint = _destination(mid, toward + side, out)
+            waypoints = _arc_waypoints(start, dest, target / street, side)
             calls += 1
             try:
-                route = _ors(key, {"coordinates": [start, waypoint, dest]})
+                route = _trim_spurs(*_ors(key, {"coordinates": [start] + waypoints + [dest]}))
             except ApiError as e:
                 if e.status != 422:
                     raise
-                break                                  # waypoint in the water: other side
+                break                                  # a waypoint in the water: other side
             candidates.append(route)
             if abs(route[1] - length) / length <= OUT_AND_BACK_TOLERANCE:
                 if not explore:
@@ -466,3 +472,61 @@ def _run_to(key, start, dest, length, seed, explore=False):
                 break
             target *= min(2.0, max(0.5, length / route[1]))
     return candidates or [direct], calls, direct[1]
+
+
+def _arc_waypoints(start, dest, path_m, side):
+    """Waypoints at RUN_TO_ARC along a circular arc from start to dest, bulging
+    to the left (side=-1) or right (side=1) of the way there, sized so start
+    -> waypoints -> dest is path_m long in straight lines. A long run on a
+    short gap bends the arc past a semicircle, round towards a full circle:
+    a loop that arrives at the destination rather than overshooting it."""
+    c = max(_haversine(start, dest) / 2, 1.0)
+    mid = [(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]
+    toward = _bearing(start, dest)
+
+    def points(phi):
+        # phi: the angle the arc turns through. In a frame with x towards the
+        # destination and y towards the bulge, start is (-c, 0), dest (c, 0).
+        r = c / math.sin(phi / 2)
+        cy = -r * math.cos(phi / 2)                    # the circle's centre is (0, cy)
+        from_start = math.atan2(-cy, -c)
+        out = []
+        for f in RUN_TO_ARC:
+            t = from_start - f * phi                   # over the bulge, start to dest
+            x, y = r * math.cos(t), cy + r * math.sin(t)
+            out.append(_destination(mid, toward + side * math.degrees(math.atan2(y, x)),
+                                    math.hypot(x, y)))
+        return out
+
+    def path(phi):
+        pts = [start] + points(phi) + [dest]
+        return sum(_haversine(p, q) for p, q in zip(pts, pts[1:]))
+
+    lo, hi = 1e-3, 2 * math.pi - 1e-3
+    for _ in range(40):                                # path(phi) grows with phi
+        phi = (lo + hi) / 2
+        lo, hi = (phi, hi) if path(phi) < path_m else (lo, phi)
+    return points((lo + hi) / 2)
+
+
+def _trim_spurs(coords, metres):
+    """Cut spurs - stretches run out and straight back over the same points.
+    ORS adds one whenever a waypoint lands on a dead-end path: in to the
+    waypoint, then back out the way it came. -> (coords, metres)"""
+    def key(c):
+        return round(c[0], 6), round(c[1], 6)
+
+    out = []
+    for c in coords:
+        if out and key(c) == key(out[-1]):
+            continue                                   # repeated point at a waypoint
+        if len(out) >= 2 and key(c) == key(out[-2]):
+            out.pop()                                  # went to out[-1] and came straight back
+            continue
+        out.append(c)
+
+    def length(cs):
+        return sum(_haversine(a, b) for a, b in zip(cs, cs[1:]))
+
+    before = length(coords)
+    return out, metres * (length(out) / before if before else 1.0)

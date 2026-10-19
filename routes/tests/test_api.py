@@ -229,17 +229,46 @@ class RunTo(unittest.TestCase):
         self.assertEqual(calls, 1)
         self.assertEqual(ors.call_args.args[1]["coordinates"], [self.START, self.DEST])
 
-    def test_longer_runs_detour_through_a_waypoint(self):
+    def test_longer_runs_bend_out_through_an_arc_of_waypoints(self):
         def fake(key, body):
             return leg(1800 if len(body["coordinates"]) == 2 else 5100)
         with mock.patch.object(api, "_ors", side_effect=fake) as ors:
             routes, calls, _ = api._run_to("key", self.START, self.DEST, 5000, 1)
-        self.assertEqual([m for _, m in routes], [5100])
+        self.assertEqual([round(m) for _, m in routes], [5100])
         self.assertEqual(calls, 2)
-        start, waypoint, dest = ors.call_args.args[1]["coordinates"]
-        self.assertEqual((start, dest), (self.START, self.DEST))
-        # The waypoint sits off to the side of the straight line.
-        self.assertGreater(api._haversine(waypoint, self.START), 1000)
+        coords = ors.call_args.args[1]["coordinates"]
+        self.assertEqual((coords[0], coords[-1]), (self.START, self.DEST))
+        self.assertEqual(len(coords), 2 + len(api.RUN_TO_ARC))
+
+    def test_arc_waypoints_add_up_to_the_distance_on_one_side(self):
+        straight = api._haversine(self.START, self.DEST)
+        for path_m in (1.5 * straight, 4 * straight):
+            for side in (1, -1):
+                pts = api._arc_waypoints(self.START, self.DEST, path_m, side)
+                line = [self.START] + pts + [self.DEST]
+                total = sum(api._haversine(a, b) for a, b in zip(line, line[1:]))
+                self.assertAlmostEqual(total, path_m, delta=1)
+                # All on the requested side of the way there.
+                toward = api._bearing(self.START, self.DEST)
+                for p in pts:
+                    turn = (api._bearing(self.START, p) - toward + 540) % 360 - 180
+                    self.assertGreater(turn * side, -1e-6)
+
+    def test_arc_waypoints_never_overshoot_the_destination(self):
+        # A long run on a short gap must loop round, not run past and back:
+        # the last waypoint is nearer the destination than the first.
+        pts = api._arc_waypoints(self.START, self.DEST, 6000, 1)
+        self.assertLess(api._haversine(pts[-1], self.DEST), api._haversine(pts[0], self.DEST))
+
+    def test_spurs_to_a_waypoint_are_cut(self):
+        a, b, c, d = [0.0, 0.0], [0.001, 0.0], [0.002, 0.0], [0.001, 0.001]
+        coords, metres = api._trim_spurs([a, b, c, c, b, d], 400.0)
+        self.assertEqual(coords, [a, b, d])
+        self.assertAlmostEqual(metres, 200.0, delta=1)
+
+    def test_a_route_without_spurs_is_untouched(self):
+        route = [[0.0, 0.0], [0.001, 0.0], [0.001, 0.001]]
+        self.assertEqual(api._trim_spurs(route, 222.0), (route, 222.0))
 
     def test_waypoint_in_the_water_tries_the_other_side(self):
         sides = []

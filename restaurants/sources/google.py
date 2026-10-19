@@ -9,7 +9,7 @@ nearby searches share results.
 
 import math
 
-from restaurants import cuisines
+from restaurants import cuisines, prices
 from restaurants.sources import cache_ttl_seconds, fixture
 from server import cache
 from server.fetch import request_json
@@ -19,7 +19,7 @@ DETAILS_URL = "https://places.googleapis.com/v1/places/"
 
 PLACE_FIELDS = [
     "id", "displayName", "formattedAddress", "shortFormattedAddress", "location",
-    "priceLevel", "rating", "userRatingCount", "primaryType", "types",
+    "priceLevel", "priceRange", "rating", "userRatingCount", "primaryType", "types",
     "regularOpeningHours.periods", "utcOffsetMinutes", "googleMapsUri", "businessStatus",
 ]
 
@@ -31,7 +31,7 @@ PRICE_LEVELS = {
     "PRICE_LEVEL_EXPENSIVE": 3, "PRICE_LEVEL_VERY_EXPENSIVE": 4,
 }
 
-CACHE_VERSION = 1   # bump when PLACE_FIELDS changes, to ignore old cache entries
+CACHE_VERSION = 2   # bump when PLACE_FIELDS changes, to ignore old cache entries
 
 
 def _headers(key, fields):
@@ -58,6 +58,7 @@ def parse(place):
         "lat": loc["latitude"],
         "lon": loc["longitude"],
         "price": PRICE_LEVELS.get(place.get("priceLevel")),
+        "price_text": prices.range_text(place.get("priceRange")),
         "cuisines": cuisines.from_google(place.get("primaryType"), place.get("types")),
         "rating": place.get("rating"),
         "review_count": place.get("userRatingCount") or 0,

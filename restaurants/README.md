@@ -41,6 +41,13 @@ anyway - see below), non-recognised places are sorted by distance, the price
 filter works for the Michelin-listed places, and "open now" works wherever OSM
 or Google has hours. Places with unknown hours are hidden by "open now".
 
+Results show what the `$` level means in dollars, e.g. `$$$ ($50–75)`. The
+same symbol means different money on each source, so the level and the
+dollars always come from one source (`prices.py`): Google's own price range
+for that restaurant, else Yelp's per-person band, else Michelin's band for a
+full meal without drinks. Google's level alone gets no dollar figure, because
+Google publishes none.
+
 OpenStreetMap's Overpass servers are run by volunteers and are often busy, so
 searches don't call them: one request downloads every named food place in the
 city (~2,700, cached in `.cache/`), and each search filters that copy locally

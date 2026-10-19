@@ -580,6 +580,14 @@
       : '<span class="r-chip r-chip-licence" title="' + esc(title) + '">✓ ' + esc(licence.text) + '</span>';
   }
 
+  // "$$ ($25–50)": the level plus what it means in dollars on its source.
+  function priceHTML(r) {
+    var symbols = priceText(r.price);
+    if (!r.price_text) return esc(symbols);
+    var text = symbols ? symbols + ' (' + r.price_text + ')' : r.price_text;
+    return '<span class="r-price" title="' + esc(r.price_note || '') + '">' + esc(text) + '</span>';
+  }
+
   function breakdownHTML(r) {
     return '<details class="r-why"><summary>Local score ' + r.score + '</summary><ul>' +
       r.breakdown.map(function (row) {
@@ -590,10 +598,10 @@
 
   function itemHTML(r, i) {
     var meta = [
-      r.cuisines.slice(0, 2).map(function (c) { return c.label; }).join(', '),
-      priceText(r.price),
-      formatDistance(r.distance_m),
-      openText(r.open_now)
+      esc(r.cuisines.slice(0, 2).map(function (c) { return c.label; }).join(', ')),
+      priceHTML(r),
+      esc(formatDistance(r.distance_m)),
+      esc(openText(r.open_now))
     ].filter(Boolean).join(' · ');
     var chips = r.breakdown
       .filter(function (row) { return row.kind === 'recognition' || row.kind === 'rating'; })
@@ -606,7 +614,7 @@
       '<div class="r-body">' +
         '<button type="button" class="r-name" aria-pressed="' + (r.id === state.selectedId) + '">' +
           esc(r.name) + '</button>' +
-        (meta ? '<div class="r-meta">' + esc(meta) + '</div>' : '') +
+        (meta ? '<div class="r-meta">' + meta + '</div>' : '') +
         (chips ? '<div class="r-chips">' + chips + '</div>' : '') +
         breakdownHTML(r) +
         (url ? '<a class="r-maplink" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">' +

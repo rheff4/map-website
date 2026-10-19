@@ -116,3 +116,32 @@ class ApiTest(DemoTestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class LocalCuisineTest(DemoTestCase):
+    """A restaurant known for a signature dish is found by the "Local" cuisine."""
+
+    SPECIALTY = [{"name": "Lantern & Ladle", "lat": 42.3601, "lon": -71.054, "known_for": [
+        {"dish": "clam_chowder", "label": "Clam chowder", "quote": "famous for its chowder",
+         "source": "Eater 38", "source_url": "https://example.com"}]}]
+
+    def setUp(self):
+        super().setUp()
+        with mock.patch("restaurants.specialties.load", return_value=self.SPECIALTY):
+            result = service.search(*BOSTON_COMMON, radius_m=2000, now=MONDAY_EVENING)
+        self.by_name = {r["name"]: r for r in result["results"]}
+
+    def keys(self, name):
+        return [c["key"] for c in self.by_name[name]["cuisines"]]
+
+    def test_specialty_place_is_local_after_its_real_cuisines(self):
+        keys = self.keys("Lantern & Ladle")
+        self.assertEqual(keys[-1], "local")
+        self.assertGreater(len(keys), 1)
+
+    def test_other_places_are_not_local(self):
+        self.assertNotIn("local", self.keys("Quiet Harbor Kitchen"))
+
+    def test_local_is_always_offered_by_the_filter(self):
+        keys = [c["key"] for c in api.get_config(Request("GET", "/api/restaurants/config", {}, None))["cuisines"]]
+        self.assertIn("local", keys)

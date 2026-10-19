@@ -216,6 +216,10 @@ def search(lat, lon, radius_m=DEFAULT_RADIUS_M, city_key=None, now=None):
             excluded["chains"] += 1
             continue
         place["specialties"] = specialties.for_place(place, local)
+        # Known for a signature dish -> found by the "Local" cuisine filter too.
+        # Added last, so the cuisines shown on the result stay the real ones.
+        if place["specialties"] and all(c["key"] != cuisines.LOCAL for c in item["cuisines"]):
+            item["cuisines"].append({"key": cuisines.LOCAL, "label": cuisines.LABELS[cuisines.LOCAL]})
         item.update(scoring.score_place(place))
         results.append(item)
 

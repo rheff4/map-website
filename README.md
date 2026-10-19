@@ -3,17 +3,18 @@
 <img src="shared/brand/logo.svg" alt="Fuel Stop" width="200">
 
 One interactive map for foodie runners new to a city: running routes, public
-bathrooms, and authentic local restaurants. Live at
-https://map-website-snowy.vercel.app. (Working title until 19 October 2026:
-Map Website. The earlier spec files keep that name.)
+bathrooms, and authentic local restaurants. Launched 19 October 2026 at
+https://map-website-snowy.vercel.app. (Working title until then: Map Website.
+The earlier spec files keep that name.)
 
 The logo is `shared/brand/logo.svg`, with the mark alone in `mark.svg`. Its
 colours are the site's: green `#1b4436`, orange `#e8743f`, cream `#f8f6f1`.
 
-Current spec: **[Fuel Stop_Sprint 1_PRD 4.md](Fuel%20Stop_Sprint%201_PRD%204.md)**.
-Earlier revisions are kept as the record: `SilvaHefferon_ProjectBrief.pdf`
-(revision 1), `Map Website_Sprint 1_PRD 2.md` (revision 2) and
-`Map Website_Sprint 1_PRD 3.md` (revision 3). Where they disagree, revision 4
+Current spec: **[Fuel Stop_Sprint 1_PRD 5.md](Fuel%20Stop_Sprint%201_PRD%205.md)**
+(the launch revision). Earlier revisions are kept as the record:
+`SilvaHefferon_ProjectBrief.pdf` (revision 1), `Map Website_Sprint 1_PRD 2.md`
+(revision 2), `Map Website_Sprint 1_PRD 3.md` (revision 3) and
+`Fuel Stop_Sprint 1_PRD 4.md` (revision 4). Where they disagree, revision 5
 is current.
 
 ## Layout

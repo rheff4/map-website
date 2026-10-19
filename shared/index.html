@@ -127,19 +127,7 @@
   const popup = (props) =>
     '<b>' + props.name + '</b>' + (props.sub ? '<br>' + props.sub : '');
 
-  view.addLayer({
-    id: 'restaurants:sample',
-    type: 'circle',
-    data: asPoints(SAMPLE_DATA.restaurants),
-    paint: {
-      'circle-radius': 5,
-      'circle-color': '#e53e3e',
-      'circle-stroke-width': 1,
-      'circle-stroke-color': '#fff'
-    },
-    legend: { label: 'Restaurants', color: '#e53e3e' },
-    popup: popup
-  });
+  // Restaurants now load their own data (restaurants/layers.js).
 
   view.addLayer({
     id: 'routes:sample-bathrooms',

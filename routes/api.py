@@ -1,8 +1,13 @@
 """
 Route endpoints, loaded by server/app.py.
 
-    GET /api/routes/generate?lon=&lat=&km=&shape=loop|out-and-back&seed=
+    GET /api/routes/generate?lon=&lat=&km=&shape=loop|out-and-back|to&seed=
+                             &hills=flat|balanced|hilly&to_lon=&to_lat=
     GET /api/routes/toilets                 labelled public toilets, GeoJSON
+
+shape=to runs one way from the start to a destination (a restaurant) - see
+_run_to. hills picks among the candidates near the requested distance by
+their climb on the USGS grid; it never trades away distance for hills.
 
 Routes come from OpenRouteService's foot-walking profile, called from here so
 the API key never reaches the browser. Climb comes from the USGS elevation
@@ -45,6 +50,18 @@ DETOUR = 1.3
 # half the distance, up to OUT_AND_BACK_AIMS tries, keeping the best leg seen.
 OUT_AND_BACK_TOLERANCE = 0.08
 OUT_AND_BACK_AIMS = 3
+
+# Hilliness only chooses among candidates this close to the requested
+# distance (or within 3 points of the closest, if none are): distance first.
+HILLS = ("flat", "balanced", "hilly")
+CLOSE_ENOUGH = 0.10
+# Below this spread in climb, the page says routes here are much the same.
+SIMILAR_CLIMB_M = 10
+
+# A run to a destination: asking for up to this much over the direct route
+# just gets the direct route. Beyond it, detours bend out through a waypoint.
+DIRECT_SLACK = 1.05
+RUN_TO_AIMS = 3
 
 EARTH_R = 6371008.8
 
@@ -97,11 +114,22 @@ def generate(request):
     km = request.number("km", default=DEFAULT_KM, low=MIN_KM, high=MAX_KM)
     seed = int(request.number("seed", default=1, low=0, high=1e6))
     shape = request.query.get("shape") or "loop"
-    if shape not in ("loop", "out-and-back"):
-        raise ApiError(400, "Parameter 'shape' must be 'loop' or 'out-and-back'.")
+    if shape not in ("loop", "out-and-back", "to"):
+        raise ApiError(400, "Parameter 'shape' must be 'loop', 'out-and-back' or 'to'.")
+    hills = request.query.get("hills") or "balanced"
+    if hills not in HILLS:
+        raise ApiError(400, "Parameter 'hills' must be 'flat', 'balanced' or 'hilly'.")
     if not cities.contains(city, lon, lat):
         raise ApiError(400, "That start point is outside %s. Choose a point inside the city."
                        % city["name"])
+    dest = None
+    if shape == "to":
+        if "to_lon" not in request.query or "to_lat" not in request.query:
+            raise ApiError(400, "A run to somewhere needs 'to_lon' and 'to_lat'.")
+        dest = [request.number("to_lon", low=-180, high=180),
+                request.number("to_lat", low=-90, high=90)]
+        if not cities.contains(city, dest[0], dest[1]):
+            raise ApiError(400, "That destination is outside %s." % city["name"])
 
     key = env.secret("ORS_API_KEY")
     if not key:
@@ -121,33 +149,72 @@ def generate(request):
 
     start = [lon, lat]
     length = km * 1000
+    grid = elevation.load(city["key"])
+    # Hills need candidates to choose between, so look wider - within the
+    # same per-click call cap. Without a grid there is nothing to compare.
+    explore = hills != "balanced" and grid is not None
+    direct_m = None
     tried = MAX_CALLS          # if generation fails part-way, refund nothing
     try:
         if shape == "loop":
-            coords, actual, tried = _best_loop(key, start, length, seed)
+            candidates, tried = _loop_candidates(key, start, length, seed, explore)
+        elif shape == "out-and-back":
+            candidates, tried = _out_and_back_candidates(key, start, length, seed, explore)
         else:
-            coords, actual, tried = _out_and_back(key, start, length, seed)
+            candidates, tried, direct_m = _run_to(key, start, dest, length, seed, explore)
     finally:
         BUDGET.settle(reserved, tried)
 
-    grid = elevation.load(city["key"])
-    elev = elevation.measure(grid, coords)
+    (coords, actual), elev, choice = _choose(candidates, length, hills, grid)
+    props = {
+        "requestedM": length,
+        "lengthM": round(actual, 1),
+        "shape": shape,
+        "seed": seed,
+        "hills": hills,
+        "choice": choice,
+        "candidates": tried,
+        "ascent": elev["ascent"] if grid else None,
+        "descent": elev["descent"] if grid else None,
+        "elevation": elev,
+        "source": "openrouteservice",
+        "stub": False,
+    }
+    if shape == "to":
+        props.update(destination=dest, directM=round(direct_m, 1),
+                     belowDirect=length < direct_m)
     return {
         "type": "Feature",
         "geometry": {"type": "LineString", "coordinates": coords},
-        "properties": {
-            "requestedM": length,
-            "lengthM": round(actual, 1),
-            "shape": shape,
-            "seed": seed,
-            "candidates": tried,
-            "ascent": elev["ascent"] if grid else None,
-            "descent": elev["descent"] if grid else None,
-            "elevation": elev,
-            "source": "openrouteservice",
-            "stub": False,
-        },
+        "properties": props,
     }
+
+
+def _choose(candidates, length, hills, grid):
+    """Pick one candidate: closest to the distance, or - for flat / hilly -
+    the least / most climb among those close enough to it.
+
+    -> ((coords, metres), elevation summary, what was compared)"""
+    def off(c):
+        return abs(c[1] - length) / length
+
+    nearest = min(off(c) for c in candidates)
+    near = [c for c in candidates if off(c) <= max(CLOSE_ENOUGH, nearest + 0.03)]
+    measured = [(c, elevation.measure(grid, c[0])) for c in near]
+    climbs = [e["ascent"] for _, e in measured]
+    choice = {
+        "compared": len(measured),
+        "climbMin": min(climbs) if grid else None,
+        "climbMax": max(climbs) if grid else None,
+        "similar": None,
+    }
+    if hills == "balanced" or grid is None or len(measured) < 2:
+        c, e = min(measured, key=lambda m: off(m[0]))
+        return c, e, choice
+    choice["similar"] = max(climbs) - min(climbs) < SIMILAR_CLIMB_M
+    pick = min if hills == "flat" else max
+    c, e = pick(measured, key=lambda m: m[1]["ascent"])
+    return c, e, choice
 
 
 # ------------------------------------------------------------------- limits
@@ -227,11 +294,12 @@ def _loop_round(key, start, ask, seeds):
         return list(pool.map(one, seeds))
 
 
-def _best_loop(key, start, length, seed):
-    """Several ORS round trips at once; keep the one closest to the length.
+def _loop_candidates(key, start, length, seed, explore=False):
+    """Several ORS round trips at once -> ([(coords, metres), ...], calls).
 
     If the closest is still well off, ask again for a scaled length: a request
-    for 5 km that keeps coming back at 8 km is asked for ~3 km next time."""
+    for 5 km that keeps coming back at 8 km is asked for ~3 km next time. When
+    exploring (choosing by hills), always ask a second round for more choice."""
     base = seed * LOOP_CANDIDATES * 2
     results = _loop_round(key, start, length, [base + k for k in range(LOOP_CANDIDATES)])
     routes = [r for r in results if not isinstance(r, ApiError)]
@@ -240,13 +308,20 @@ def _best_loop(key, start, length, seed):
     best = min(routes, key=lambda r: abs(r[1] - length))
     calls = len(results)
 
-    if abs(best[1] - length) / length > LOOP_RETRY_OFF and calls + LOOP_CANDIDATES <= MAX_CALLS:
-        ask = length * min(2.0, max(0.5, length / best[1]))
+    off = abs(best[1] - length) / length > LOOP_RETRY_OFF
+    if (off or explore) and calls + LOOP_CANDIDATES <= MAX_CALLS:
+        ask = length * min(2.0, max(0.5, length / best[1])) if off else length
         more = _loop_round(key, start, ask, [base + LOOP_CANDIDATES + k for k in range(LOOP_CANDIDATES)])
         calls += len(more)
         routes += [r for r in more if not isinstance(r, ApiError)]
-        best = min(routes, key=lambda r: abs(r[1] - length))
 
+    return routes, calls
+
+
+def _best_loop(key, start, length, seed):
+    """The loop closest to the length -> (coords, metres, calls)."""
+    routes, calls = _loop_candidates(key, start, length, seed)
+    best = min(routes, key=lambda r: abs(r[1] - length))
     return best[0], best[1], calls
 
 
@@ -262,7 +337,30 @@ def _destination(start, bearing_deg, dist_m):
     return [math.degrees(lo2), math.degrees(la2)]
 
 
+def _bearing(a, b):
+    """Initial compass bearing from a to b, in degrees."""
+    la1, la2 = math.radians(a[1]), math.radians(b[1])
+    dlon = math.radians(b[0] - a[0])
+    y = math.sin(dlon) * math.cos(la2)
+    x = math.cos(la1) * math.sin(la2) - math.sin(la1) * math.cos(la2) * math.cos(dlon)
+    return math.degrees(math.atan2(y, x)) % 360
+
+
+def _haversine(a, b):
+    la1, la2 = math.radians(a[1]), math.radians(b[1])
+    h = (math.sin((la2 - la1) / 2) ** 2 +
+         math.cos(la1) * math.cos(la2) * math.sin(math.radians(b[0] - a[0]) / 2) ** 2)
+    return 2 * EARTH_R * math.asin(math.sqrt(h))
+
+
 def _out_and_back(key, start, length, seed):
+    """The out-and-back closest to the length -> (coords, metres, calls)."""
+    routes, calls = _out_and_back_candidates(key, start, length, seed)
+    best = min(routes, key=lambda r: abs(r[1] - length))
+    return best[0], best[1], calls
+
+
+def _out_and_back_candidates(key, start, length, seed, explore=False):
     """Run out to a turnaround and back the same way.
 
     ORS's round_trip only makes loops, so this aims at a turnaround point,
@@ -274,11 +372,16 @@ def _out_and_back(key, start, length, seed):
     A direction can be blocked: aim across the harbour and ORS snaps the
     turnaround to the same spot on the shore however far you aim. When
     re-aiming stops changing the leg, or the turnaround is unroutable, it
-    moves on to another direction. Returns the best leg found within
-    MAX_CALLS."""
+    moves on to another direction. Returns ([(coords, metres), ...], calls):
+    the first leg within tolerance, or - when exploring - one per direction
+    that reached it; failing that, the best leg found within MAX_CALLS."""
+    def there_and_back(leg, got):
+        return leg + leg[::-1][1:], 2 * got
+
     half = length / 2
     last_error = None
     best = None
+    good = []
     calls = 0
     for attempt in range(4):
         bearing = (seed * 67 + attempt * 90) % 360
@@ -298,14 +401,68 @@ def _out_and_back(key, start, length, seed):
             if best is None or abs(got - half) < abs(best[1] - half):
                 best = (leg, got)
             if got <= 0 or abs(got - half) / half <= OUT_AND_BACK_TOLERANCE:
-                return leg + leg[::-1][1:], 2 * got, calls
+                good.append(there_and_back(leg, got))
+                if not explore:
+                    return good, calls
+                break                                  # try another direction too
             if previous is not None and abs(got - previous) < 0.03 * half:
                 break                                  # blocked that way
             previous = got
             reach *= min(2.0, max(0.5, half / got))    # never more than 2x a step
         if calls >= MAX_CALLS:
             break
+    if good:
+        return good, calls
     if best is None:
         raise last_error or ApiError(422, "Couldn't find an out-and-back route from here.")
-    leg, got = best
-    return leg + leg[::-1][1:], 2 * got, calls
+    return [there_and_back(*best)], calls
+
+
+# ------------------------------------------------------------ run to a place
+
+def _run_to(key, start, dest, length, seed, explore=False):
+    """One way from start to dest, about `length` long.
+
+    The direct route sets a floor: asked for less (or barely more), the
+    runner gets the direct route and the page says how long it really is.
+    Longer runs bend out through one waypoint to the side of the straight
+    line, placed on the ellipse whose start-to-waypoint-to-dest length, scaled
+    by how much longer this pair's streets run than the crow flies, is the
+    requested distance; re-aimed like an out-and-back. Both sides are tried
+    when exploring for hills, or when one side is water.
+
+    -> ([(coords, metres), ...], calls, direct metres)"""
+    direct = _ors(key, {"coordinates": [start, dest]})
+    calls = 1
+    if length <= direct[1] * DIRECT_SLACK:
+        return [direct], calls, direct[1]
+
+    straight = max(_haversine(start, dest), 1.0)
+    street = max(1.0, direct[1] / straight)
+    mid = [(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]
+    toward = _bearing(start, dest)
+    sides = (90, -90) if seed % 2 else (-90, 90)
+
+    candidates = []
+    for side in sides:
+        target = length
+        for _ in range(RUN_TO_AIMS):
+            if calls >= MAX_CALLS:
+                break
+            semi = target / street / 2
+            out = math.sqrt(max(semi * semi - (straight / 2) ** 2, 0.0))
+            waypoint = _destination(mid, toward + side, out)
+            calls += 1
+            try:
+                route = _ors(key, {"coordinates": [start, waypoint, dest]})
+            except ApiError as e:
+                if e.status != 422:
+                    raise
+                break                                  # waypoint in the water: other side
+            candidates.append(route)
+            if abs(route[1] - length) / length <= OUT_AND_BACK_TOLERANCE:
+                if not explore:
+                    return candidates, calls, direct[1]
+                break
+            target *= min(2.0, max(0.5, length / route[1]))
+    return candidates or [direct], calls, direct[1]

@@ -3,8 +3,10 @@
  *
  * Owner: Rob - branch `routes`
  *
- * PRD feature: a running route generator with adjustable distance, start
- * point, loop or out-and-back, and elevation.
+ * PRD features: a running route generator with adjustable distance, start
+ * point, loop or out-and-back, and elevation (flattest / hilliest); and a run
+ * to a restaurant, handed over by the Restaurants tab's "Run here" button
+ * through view.on('restaurants:run-to').
  *
  * Everything here talks to generateRoute() and nothing else. It asks the
  * server (routes/api.py) for a real route on streets; if the server has no
@@ -24,7 +26,9 @@
   var state = {
     start: MapWebsite.DEFAULT_CENTER.slice(),  // Boston Common until clicked
     lengthM: 5000,
-    shape: 'loop',                             // 'loop' | 'out-and-back'
+    shape: 'loop',                             // 'loop' | 'out-and-back' | 'to'
+    hills: 'balanced',                         // 'flat' | 'balanced' | 'hilly'
+    dest: null,                                // {name, lon, lat} when shape is 'to'
     paceSecPerKm: 360,                         // 6:00 min/km
     seed: 1,
     route: null
@@ -132,8 +136,9 @@
       'lat=' + opts.start[1],
       'km=' + (opts.lengthM / 1000),
       'shape=' + encodeURIComponent(opts.shape),
+      'hills=' + encodeURIComponent(opts.hills),
       'seed=' + opts.seed
-    ].join('&');
+    ].concat(opts.dest ? ['to_lon=' + opts.dest.lon, 'to_lat=' + opts.dest.lat] : []).join('&');
 
     return fetch('/api/routes/generate?' + query).then(function (r) {
       return r.json().then(function (body) {
@@ -148,8 +153,8 @@
 
   /* The straight-line preview, used only when the server can't route. */
   function stubRoute(opts, reason) {
-    var coords = opts.shape === 'out-and-back'
-      ? stubOutAndBack(opts.start, opts.lengthM, opts.seed)
+    var coords = opts.shape === 'to' ? [opts.start, [opts.dest.lon, opts.dest.lat]]
+      : opts.shape === 'out-and-back' ? stubOutAndBack(opts.start, opts.lengthM, opts.seed)
       : stubLoop(opts.start, opts.lengthM, opts.seed);
 
     return {
@@ -194,6 +199,12 @@
   }
 
   function coord(c) { return c[1].toFixed(4) + ', ' + c[0].toFixed(4); }
+
+  /* Time of day `seconds` from now, e.g. "7:42 pm". */
+  function arrival(seconds) {
+    return new Date(Date.now() + seconds * 1000)
+      .toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  }
 
   // ------------------------------------------------------------ map layers
 
@@ -240,6 +251,27 @@
     }
   });
 
+  function destFeature() {
+    return state.dest ? {
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [state.dest.lon, state.dest.lat] },
+      properties: { name: state.dest.name }
+    } : EMPTY;
+  }
+
+  view.addLayer({
+    id: 'routes:dest',
+    type: 'circle',
+    data: EMPTY,
+    paint: {
+      'circle-radius': 8,
+      'circle-color': '#c53030',
+      'circle-stroke-width': 2,
+      'circle-stroke-color': '#fff'
+    },
+    popup: function (p) { return '<b>' + esc(p.name) + '</b><br>Run destination'; }
+  });
+
   // -------------------------------------------------------------- sidebar
 
   var panel = sidebar.panel('routes');
@@ -253,6 +285,8 @@
     '.routes-shape { display: flex; gap: 12px; border: 0; padding: 0; margin: 0; }',
     '.routes-shape label { font-weight: 400; display: flex; align-items: center; gap: 5px; }',
     '.routes-pace { width: 70px; }',
+    '.routes-dest { background: #f0f5fb; border-radius: 8px; padding: 8px 10px; }',
+    '.routes-dest button { font: inherit; font-size: 12px; margin-left: 6px; cursor: pointer; }',
     '.routes-hint { color: #666; margin: 0 0 16px; }',
     '#routes-generate {',
     '  width: 100%; padding: 10px; font: inherit; font-weight: 600; color: #fff;',
@@ -282,10 +316,26 @@
     '  <input type="range" id="routes-distance" min="1" max="20" step="0.5" value="5">',
     '</div>',
 
-    '<div class="routes-field">',
+    '<div class="routes-field routes-dest" id="routes-dest" hidden>',
+    '  <span class="routes-legend">Running to</span>',
+    '  <span id="routes-dest-name"></span>',
+    '  <button type="button" id="routes-dest-clear">Clear</button>',
+    '</div>',
+
+    '<div class="routes-field" id="routes-shape-field">',
     '  <fieldset class="routes-shape">',
     '    <label><input type="radio" name="routes-shape" value="loop" checked> Loop</label>',
     '    <label><input type="radio" name="routes-shape" value="out-and-back"> Out and back</label>',
+    '  </fieldset>',
+    '  <p class="routes-hint" style="margin:6px 0 0">Or pick a restaurant and press <b>Run here</b>.</p>',
+    '</div>',
+
+    '<div class="routes-field">',
+    '  <span class="routes-legend">Hills</span>',
+    '  <fieldset class="routes-shape">',
+    '    <label><input type="radio" name="routes-hills" value="flat"> Flattest</label>',
+    '    <label><input type="radio" name="routes-hills" value="balanced" checked> Balanced</label>',
+    '    <label><input type="radio" name="routes-hills" value="hilly"> Hilliest</label>',
     '  </fieldset>',
     '</div>',
 
@@ -305,7 +355,11 @@
     distanceOut: document.getElementById('routes-distance-out'),
     pace: document.getElementById('routes-pace'),
     generate: document.getElementById('routes-generate'),
-    results: document.getElementById('routes-results')
+    results: document.getElementById('routes-results'),
+    dest: document.getElementById('routes-dest'),
+    destName: document.getElementById('routes-dest-name'),
+    destClear: document.getElementById('routes-dest-clear'),
+    shapeField: document.getElementById('routes-shape-field')
   };
 
   // ---------------------------------------------------------------- wiring
@@ -327,6 +381,35 @@
     });
   });
 
+  panel.querySelectorAll('input[name="routes-hills"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+      if (radio.checked) state.hills = radio.value;
+    });
+  });
+
+  /* A restaurant to run to, or null to go back to loops / out-and-backs. */
+  function setDest(dest) {
+    state.dest = dest;
+    els.dest.hidden = !dest;
+    els.shapeField.hidden = !!dest;
+    if (dest) {
+      els.destName.textContent = dest.name;
+      state.shape = 'to';
+    } else {
+      state.shape = panel.querySelector('input[name="routes-shape"]:checked').value;
+    }
+    view.setData('routes:dest', destFeature());
+  }
+
+  els.destClear.addEventListener('click', function () { setDest(null); });
+
+  // "Run here" on the Restaurants tab.
+  view.on('restaurants:run-to', function (dest) {
+    setDest(dest);
+    sidebar.show('routes');
+    view.fitBounds(boundsOf([state.start, [dest.lon, dest.lat]]), 80);
+  });
+
   els.pace.addEventListener('change', function () {
     var secs = parsePace(els.pace.value);
     if (secs === null) {
@@ -344,6 +427,8 @@
       start: state.start,
       lengthM: state.lengthM,
       shape: state.shape,
+      hills: state.hills,
+      dest: state.shape === 'to' ? state.dest : null,
       seed: state.seed++
     }).then(function (route) {
       state.route = route;
@@ -375,11 +460,24 @@
         (p.elevation && !p.elevation.complete ? ' <span style="color:#666">(partial)</span>' : '');
 
     var notes = [];
+    var c = p.choice;
     if (p.stub) {
       notes.push('Straight-line preview, not a real route. ' + (p.stubReason || ''));
+    } else if (p.belowDirect) {
+      notes.push('The most direct route to ' + esc(state.dest ? state.dest.name : 'there') +
+        ' is ' + km(p.directM) + ', longer than the ' + km(requested) +
+        ' you asked for. Here it is: a run there can’t be shorter.');
     } else if (Math.abs(delta) > LENGTH_WARNING_PCT) {
       notes.push('Couldn’t get close to ' + km(requested) + ' from here — ' +
         'few streets connect near this start point. Try generating again, or move the start.');
+    }
+    if (c && c.similar) {
+      notes.push('Routes here are much the same for hills: ' + Math.round(c.climbMin) + '–' +
+        Math.round(c.climbMax) + ' m of climb across the ' + c.compared + ' compared.');
+    } else if (c && p.hills !== 'balanced' && c.compared > 1) {
+      notes.push((p.hills === 'flat' ? 'Flattest' : 'Hilliest') + ' of ' + c.compared +
+        ' routes near this distance (' + Math.round(c.climbMin) + '–' +
+        Math.round(c.climbMax) + ' m of climb).');
     }
 
     els.results.innerHTML = [
@@ -388,6 +486,7 @@
       '  <dt>Actual</dt><dd>' + km(actual) +
         ' <span style="color:#666">(' + (delta >= 0 ? '+' : '') + delta.toFixed(1) + '%)</span></dd>',
       '  <dt>Est. time</dt><dd>' + clock(seconds) + '</dd>',
+      p.shape === 'to' ? '  <dt>Arrive</dt><dd>' + arrival(seconds) + ' if you leave now</dd>' : '',
       '  <dt>Climb</dt><dd>' + climb + '</dd>',
       '</dl>'
     ].concat(notes.map(function (n) {
@@ -395,9 +494,14 @@
     })).join('\n');
   }
 
-  // Clicking the map moves the start point. Note this fires for clicks on
-  // restaurant pins too - their popup still opens.
-  view.onMapClick(function (lonLat) {
+  // Clicking the map moves the start point - only while this tab is open,
+  // and never on a restaurant pin (that selects the restaurant instead).
+  var PIN_LAYERS = ['restaurants:recognised', 'restaurants:other'];
+  view.onMapClick(function (lonLat, e) {
+    if (sidebar.active() !== 'routes') return;
+    var map = view.getMap();
+    var pins = PIN_LAYERS.filter(function (id) { return map.getLayer(id); });
+    if (pins.length && map.queryRenderedFeatures(e.point, { layers: pins }).length) return;
     setStart(lonLat);
   });
 
@@ -475,13 +579,7 @@
         'text-opacity': ['step', ['zoom'], 0, 13, 1]
       }
     });
-    // The real layer replaces the demo snapshot in shared/index.html, which
-    // has no labels. That block is temporary; once it's gone this is a no-op.
-    if (view.listLayers().indexOf('routes:sample-bathrooms') !== -1) {
-      view.removeLayer('routes:sample-bathrooms');
-    }
   }).catch(function (err) {
-    // Leave the demo toilets in place if the real ones can't load.
     if (global.console) console.warn('[routes] toilets unavailable:', err.message);
   });
 })(window);

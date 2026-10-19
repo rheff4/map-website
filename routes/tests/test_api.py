@@ -166,6 +166,116 @@ class OutAndBack(unittest.TestCase):
         self.assertLessEqual(calls, api.MAX_CALLS)
 
 
+class Hills(unittest.TestCase):
+    """_choose: distance first, then climb among the close candidates."""
+
+    def setUp(self):
+        self.climbs = {}
+        p = mock.patch.object(api.elevation, "measure",
+                              side_effect=lambda grid, coords: {"ascent": self.climbs[id(coords)]})
+        p.start()
+        self.addCleanup(p.stop)
+
+    def cand(self, metres, climb):
+        coords = [[-71.06, 42.35], [-71.05, 42.36]]
+        self.climbs[id(coords)] = climb
+        return coords, float(metres)
+
+    def test_flat_and_hilly_pick_by_climb(self):
+        cands = [self.cand(5000, 40), self.cand(5200, 15), self.cand(4900, 70)]
+        (_, m), e, choice = api._choose(cands, 5000, "flat", grid=object())
+        self.assertEqual(e["ascent"], 15)
+        (_, m), e, _ = api._choose(cands, 5000, "hilly", grid=object())
+        self.assertEqual(e["ascent"], 70)
+        self.assertEqual(choice["compared"], 3)
+        self.assertFalse(choice["similar"])
+
+    def test_never_trades_distance_for_hills(self):
+        cands = [self.cand(5000, 40), self.cand(8000, 200)]
+        (_, m), _, _ = api._choose(cands, 5000, "hilly", grid=object())
+        self.assertEqual(m, 5000)
+
+    def test_balanced_keeps_the_closest(self):
+        cands = [self.cand(5300, 10), self.cand(5050, 90)]
+        (_, m), _, _ = api._choose(cands, 5000, "balanced", grid=object())
+        self.assertEqual(m, 5050)
+
+    def test_says_when_routes_barely_differ(self):
+        cands = [self.cand(5000, 40), self.cand(5100, 44)]
+        _, _, choice = api._choose(cands, 5000, "flat", grid=object())
+        self.assertTrue(choice["similar"])
+
+    def test_exploring_loops_always_asks_a_second_round(self):
+        with mock.patch.object(api, "_ors", side_effect=lambda k, b: leg(5000)):
+            routes, calls = api._loop_candidates("key", [-71.06, 42.35], 5000, 1, explore=True)
+        self.assertEqual(calls, 6)
+        self.assertEqual(len(routes), 6)
+
+    def test_exploring_out_and_back_tries_other_directions(self):
+        with mock.patch.object(api, "_ors", return_value=leg(2500)):
+            routes, calls = api._out_and_back_candidates("key", [-71.06, 42.35], 5000, 1, explore=True)
+        self.assertEqual(len(routes), 4)
+        self.assertLessEqual(calls, api.MAX_CALLS)
+
+
+class RunTo(unittest.TestCase):
+    START, DEST = [-71.0656, 42.3550], [-71.0550, 42.3640]
+
+    def test_shorter_than_the_direct_route_gets_the_direct_route(self):
+        with mock.patch.object(api, "_ors", return_value=leg(1800)) as ors:
+            routes, calls, direct = api._run_to("key", self.START, self.DEST, 1000, 1)
+        self.assertEqual(direct, 1800)
+        self.assertEqual([m for _, m in routes], [1800])
+        self.assertEqual(calls, 1)
+        self.assertEqual(ors.call_args.args[1]["coordinates"], [self.START, self.DEST])
+
+    def test_longer_runs_detour_through_a_waypoint(self):
+        def fake(key, body):
+            return leg(1800 if len(body["coordinates"]) == 2 else 5100)
+        with mock.patch.object(api, "_ors", side_effect=fake) as ors:
+            routes, calls, _ = api._run_to("key", self.START, self.DEST, 5000, 1)
+        self.assertEqual([m for _, m in routes], [5100])
+        self.assertEqual(calls, 2)
+        start, waypoint, dest = ors.call_args.args[1]["coordinates"]
+        self.assertEqual((start, dest), (self.START, self.DEST))
+        # The waypoint sits off to the side of the straight line.
+        self.assertGreater(api._haversine(waypoint, self.START), 1000)
+
+    def test_waypoint_in_the_water_tries_the_other_side(self):
+        sides = []
+
+        def fake(key, body):
+            if len(body["coordinates"]) == 2:
+                return leg(1800)
+            sides.append(body["coordinates"][1])
+            if len(sides) == 1:
+                raise ApiError(422, "There's no walkable path near that start point.")
+            return leg(5000)
+        with mock.patch.object(api, "_ors", side_effect=fake):
+            routes, _, _ = api._run_to("key", self.START, self.DEST, 5000, 1)
+        self.assertEqual([m for _, m in routes], [5000])
+        self.assertEqual(len(sides), 2)
+
+    def test_never_exceeds_the_call_cap(self):
+        def fake(key, body):
+            return leg(1800 if len(body["coordinates"]) == 2 else 9000)
+        with mock.patch.object(api, "_ors", side_effect=fake):
+            _, calls, _ = api._run_to("key", self.START, self.DEST, 5000, 1, explore=True)
+        self.assertLessEqual(calls, api.MAX_CALLS)
+
+    def test_needs_a_destination_inside_the_city(self):
+        with self.assertRaises(ApiError) as cm:
+            api.generate(request(shape="to", to_lon="-71.30", to_lat="42.36"))
+        self.assertEqual(cm.exception.status, 400)
+        with self.assertRaises(ApiError):
+            api.generate(request(shape="to"))
+
+    def test_bad_hills(self):
+        with self.assertRaises(ApiError) as cm:
+            api.generate(request(hills="steep"))
+        self.assertEqual(cm.exception.status, 400)
+
+
 class RateLimits(unittest.TestCase):
     """How generate() applies routes/limits.py. ORS and the clock are fake."""
 
@@ -176,9 +286,9 @@ class RateLimits(unittest.TestCase):
         clock = lambda: self.now[0]                     # noqa: E731
         self.budget = limits.OrsBudget(per_minute=40, per_day=2000, clock=clock)
         self.visitors = limits.VisitorLimit(per_minute=5, per_day=50, clock=clock)
-        self.loop = mock.Mock(return_value=([[-71.06, 42.35], [-71.05, 42.36]], 5000.0, 3))
+        self.loop = mock.Mock(return_value=([([[-71.06, 42.35], [-71.05, 42.36]], 5000.0)], 3))
         for target, value in [("BUDGET", self.budget), ("VISITORS", self.visitors),
-                              ("_best_loop", self.loop)]:
+                              ("_loop_candidates", self.loop)]:
             p = mock.patch.object(api, target, value)
             p.start()
             self.addCleanup(p.stop)

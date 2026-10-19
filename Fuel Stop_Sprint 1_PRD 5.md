@@ -1,6 +1,6 @@
 # Fuel Stop — Sprint 1 PRD, Revision 5: Launch
 
-**Pedro Silva · Rob Hefferon** · AI Builder Space Proseminar
+**Pedro Silva · Rob Hefferon** · AI Builder Space Proseminar<br>
 Revision 5, 19 October 2026. Supersedes Revision 4 (19 October 2026).
 
 > **Fuel Stop launched on 19 October 2026** at
@@ -19,7 +19,7 @@ Revision 5, 19 October 2026. Supersedes Revision 4 (19 October 2026).
 | --- | --- | --- |
 | **Status** | Live, still building | **Launched** |
 | **Restroom-friendly routes** | Must-have, not built | **Deprioritized for time;** no longer a must-have |
-| **Local specialties** | — | **Built** (PR #4): restaurants known for a Boston signature dish are labelled |
+| **Local specialties** | — | **Built** (PRs #4 and #5): restaurants known for a Boston signature dish are labelled, and count as "Local" cuisine |
 | **Brand** | Colour logo | Plus an **all-white** version; the browser-tab icon uses it |
 
 Every remaining must-have is built.
@@ -110,6 +110,7 @@ page works on a phone-sized screen).
     never calls Claude.
   - A specialty adds 3 points but never makes a place "recognised" on its own,
     because a famous lobster spot can still be a tourist trap.
+  - The **"Local" cuisine filter** includes these places too (PR #5).
 
 ### Restrooms
 
@@ -167,7 +168,7 @@ single Michelin star.
 - **Vercel** deploys from `main`. The city's restaurant data ships with the
   site (`data/cache-seed/`), because fetching it fresh takes longer than
   Vercel allows a request.
-- **Tests:** 189, all passing at launch.
+- **Tests:** 192, all passing at launch.
 
 ---
 
@@ -242,7 +243,7 @@ runner are still to be recruited.
 | | State |
 | --- | --- |
 | Live site | https://map-website-snowy.vercel.app, running `main` |
-| `main` | PRs #1–#4 merged. 189 tests passing |
+| `main` | PRs #1–#5 merged. 192 tests passing |
 | Routing | Down until OpenRouteService's daily quota resets |
 
 **After launch:**

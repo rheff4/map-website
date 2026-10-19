@@ -13,7 +13,12 @@ LABELS = {
     "middle_eastern": "Middle Eastern", "pizza": "Pizza", "sandwiches": "Sandwiches",
     "seafood": "Seafood", "spanish": "Spanish", "steakhouse": "Steakhouse",
     "thai": "Thai", "vegetarian": "Vegetarian & vegan", "vietnamese": "Vietnamese",
+    # Known for one of the city's signature dishes (specialties.py), or tagged
+    # cuisine=local in OpenStreetMap.
+    "local": "Local",
 }
+
+LOCAL = "local"
 
 # Google place type -> canonical key. Types ending in "_restaurant" that are
 # not listed here use their prefix ("brazilian_restaurant" -> "brazilian").

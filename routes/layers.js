@@ -442,6 +442,7 @@
     }).then(function (route) {
       state.route = route;
       view.setData('routes:line', route);
+      showToiletsNearRoute();
       view.fitBounds(boundsOf(route.geometry.coordinates), 60);
       showResults(route);
     }).catch(function (err) {
@@ -562,27 +563,69 @@
     return lines.join('<br>');
   }
 
+  // Toilets show only once there's a route, and then only those within
+  // TOILET_NEAR_M of it. The full set stays here; the layers get the subset.
+  var TOILET_NEAR_M = 100;
+  var allToilets = null;
+
+  /* Metres from point p to segment a-b, all [lon, lat]. Flat projection
+     around p - plenty accurate at 100 m. */
+  function distToSegment(p, a, b) {
+    var kx = toRad(1) * EARTH_R * Math.cos(toRad(p[1]));
+    var ky = toRad(1) * EARTH_R;
+    var ax = (a[0] - p[0]) * kx, ay = (a[1] - p[1]) * ky;
+    var bx = (b[0] - p[0]) * kx, by = (b[1] - p[1]) * ky;
+    var dx = bx - ax, dy = by - ay;
+    var len2 = dx * dx + dy * dy;
+    var t = len2 ? Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2)) : 0;
+    var x = ax + t * dx, y = ay + t * dy;
+    return Math.sqrt(x * x + y * y);
+  }
+
+  function nearRoute(point, coords) {
+    if (coords.length === 1) return haversine(point, coords[0]) <= TOILET_NEAR_M;
+    for (var i = 1; i < coords.length; i++) {
+      if (distToSegment(point, coords[i - 1], coords[i]) <= TOILET_NEAR_M) return true;
+    }
+    return false;
+  }
+
+  /* Redraw the toilet layers for the current route (none without one). */
+  function showToiletsNearRoute() {
+    if (!allToilets) return;
+    var coords = state.route ? state.route.geometry.coordinates : [];
+    var near = {
+      type: 'FeatureCollection',
+      features: coords.length ? allToilets.features.filter(function (f) {
+        return nearRoute(f.geometry.coordinates, coords);
+      }) : []
+    };
+    view.setData('routes:toilets', near);
+    view.setData('routes:toilet-labels', near);
+  }
+
   fetch('/api/routes/toilets').then(function (r) {
     if (!r.ok) throw new Error('HTTP ' + r.status);
     return r.json();
   }).then(function (toilets) {
+    allToilets = toilets;
     view.addLayer({
       id: 'routes:toilets',
       type: 'circle',
-      data: toilets,
+      data: EMPTY,
       paint: {
         'circle-radius': 6,
         'circle-color': TOILET_BLUE,
         'circle-stroke-width': 1.5,
         'circle-stroke-color': '#fff'
       },
-      legend: { label: 'Public toilets', color: TOILET_BLUE },
+      legend: { label: 'Toilets near route', color: TOILET_BLUE },
       popup: toiletPopup
     });
     view.addLayer({
       id: 'routes:toilet-labels',
       type: 'symbol',
-      data: toilets,
+      data: EMPTY,
       layout: {
         'text-field': ['get', 'label'],
         'text-font': LABEL_FONT,
@@ -599,6 +642,8 @@
         'text-opacity': ['step', ['zoom'], 0, 13, 1]
       }
     });
+    // A route made before the toilets arrived.
+    showToiletsNearRoute();
   }).catch(function (err) {
     if (global.console) console.warn('[routes] toilets unavailable:', err.message);
   });
